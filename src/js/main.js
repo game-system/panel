@@ -10,6 +10,8 @@
 
 /* eslint-disable no-magic-numbers */
 // Disable the on-canvas tooltip
+//@ts-ignore
+import coreui from "@coreui/coreui";
 Chart.defaults.global.pointHitDetectionRadius = 1
 Chart.defaults.global.tooltips.enabled = false
 Chart.defaults.global.tooltips.mode = 'index'
