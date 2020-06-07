@@ -40,7 +40,8 @@
     "url": "git+https://github.com/coreui/coreui-free-bootstrap-admin-template.git"
   },
   "scripts": {
-    "dev": "parcel src/index.html src/logged.html"
+    "dev": "parcel src/index.html src/users.html ",
+    "build": "parcel build src/index.html src/users.html "
   },
   "dependencies": {
     "@coreui/chartjs": "^2.0.0",
@@ -50,11 +51,14 @@
     "@popperjs/core": "^2.4.0",
     "chart.js": "^2.9.3",
     "perfect-scrollbar": "1.5.0",
-    "sweetalert2": "^9.14.2"
+    "sweetalert2": "^9.14.2",
+    "toastr": "^2.1.4"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",
+    "@types/node": "^14.0.11",
     "@types/sweetalert": "^2.0.4",
+    "@types/toastr": "^2.1.38",
     "parcel-bundler": "^1.12.4",
     "sass": "^1.26.8",
     "typescript": "^3.9.5"

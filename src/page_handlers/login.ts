@@ -1,11 +1,13 @@
 import swal from "sweetalert2"
-export default class Login {
+import Config from "../config";
+export default class Login extends Config {
 	private loginEl = document.querySelector("#username") as HTMLInputElement;
 	private passwordEl = document.querySelector("#password") as HTMLInputElement;
 	private form = document.querySelector("#form") as HTMLFormElement;
 	private uname: String = this.loginEl.value;
 	private password: String = this.passwordEl.value;
 	constructor() {
+		super()
 		const that = this;
 		this.listenInputChanges()
 		this.form.onsubmit = function(e) {
@@ -20,7 +22,7 @@ export default class Login {
 	}
 	private login() {
 		const that = this;
-		fetch("http://localhost:9999/users/login", {
+		fetch(`${that.apiAddr}/users/login`, {
 			headers:{
 				"content-type":"application/x-www-form-urlencoded"
 			},
@@ -34,9 +36,9 @@ export default class Login {
 				swal.fire("Hata",reason,"error")
 			}else{
 				swal.fire("Giriş Başarılı","","success")
-				setTimeout(()=>{location.pathname="logged.html" },1000)
+				setTimeout(()=>{location.pathname="users.html" },1000)
 		}})
 	}
 
 }
-(window as any).Login = Login;
+(window as any).context = new Login();
