@@ -1,0 +1,8 @@
+{{#each this}}
+	<tr>
+		<td>{{id}}</td>
+		<td>{{#if date_str}}{{date_str}} {{else}} {{created_at}}{{/if}}</td>
+		<td><input type="checkbox" {{#if is_disabled}} checked {{/if}} disabled></td>
+		<td><input type="checkbox"{{#if is_seamless}} checked {{/if}} disabled></td>
+	</tr>
+{{/each}}
