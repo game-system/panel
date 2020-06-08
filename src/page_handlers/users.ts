@@ -1,39 +1,23 @@
 import toastr from "toastr";
+import cfg from "../config"
 import "toastr/build/toastr.min.css";
-import Config from "../config";
 import HandleBars from "handlebars"
+import { Config, Request, User } from "tombalaApi"
 
-interface User {
-	id: string,
-	admin_id?: string,
-	seller_id?: string,
-	superadmin_id?: string,
-	created_at: number,
-	is_disabled: boolean,
-	is_seamless: boolean,
-	user_type?: 'system' | 'superadmin' | 'admin' | 'seller' | 'user',
-	date_str?:string
-}
-
-interface Response<T> {
-	success: boolean,
-	reason?: string,
-	data: T
-}
-class Users extends Config {
-	me?: User;
-	children: User[] = [];
+class Users extends Request {
+	myData?: User;
+	myChildren: User[] = [];
 	usersTemplate = fetch(require("../partials/usersTable.hbs")).then(d => d.text()).then(HandleBars.compile);
-	constructor() {
-		super()
+	constructor(c: Config) {
+		super(c)
 		const that = this
 		window.addEventListener("DOMContentLoaded", () => {
 			that.getMyData()
-				.then(d => that.me = d)
+				.then(d => that.myData = d)
 				.then(() => that.updateUiMydata())
 				.then(that.getMyChildren.bind(that))
-				.then(children => that.children = children.map(c=>{
-					c.date_str=new Date(c.created_at*1000).toISOString().split("T")[0];
+				.then(children => that.myChildren = children.map(c => {
+					c.date_str = new Date(c.created_at * 1000).toISOString().split("T")[0];
 					return c
 				}))
 				.then(that.updateChildrenData.bind(that))
@@ -44,7 +28,7 @@ class Users extends Config {
 		const that = this;
 		const el = document.querySelector("#users_table")
 		that.usersTemplate.then(t => {
-			return t(that.children)
+			return t(that.myChildren)
 		}).then(tpl => {
 			el && (el.innerHTML = tpl)
 		})
@@ -52,14 +36,12 @@ class Users extends Config {
 	updateUiMydata() {
 		const that = this;
 		const me_id_el = document.querySelector("#me_id");
-		me_id_el && (me_id_el.innerHTML = that.me?.id || "")
+		me_id_el && (me_id_el.innerHTML = that.myData?.id || "")
 	}
 	async getMyData(): Promise<User> {
-		const that = this;
-		return fetch(`${that.apiAddr}/users/me`, { credentials: "include" })
-			.then(d => d.json())
+		return this.me()
 			.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
-			.then(({ success, data, reason }: Response<User>) => {
+			.then(({ success, data, reason }) => {
 				if (!success)
 					return Promise.reject(toastr.error("Hata", reason));
 				return data;
@@ -67,16 +49,16 @@ class Users extends Config {
 	}
 
 	async getMyChildren(): Promise<User[]> {
-		const that = this;
-		return fetch(`${that.apiAddr}/users/children`, { credentials: "include" })
-			.then(d => d.json())
+		return this.children()
 			.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
-			.then(({ success, data, reason }: Response<User[]>) => {
+			.then(({ success, data, reason }) => {
 				if (!success)
 					return Promise.reject(toastr.error("Hata", reason));
 				return data;
 			})
 	}
 }
-//@ts-ignore
-window.context = new Users();
+cfg().then(c =>
+	//@ts-ignore
+	window.context = new Users(c)
+)
