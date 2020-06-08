@@ -2,46 +2,11 @@
   "name": "@coreui/coreui-free-bootstrap-admin-template",
   "version": "3.2.0",
   "description": "Free Bootstrap Admin Template",
-  "keywords": [
-    "admin",
-    "admin panel",
-    "admin template",
-    "bootstrap",
-    "css",
-    "dashboard",
-    "framework",
-    "front-end",
-    "responsive",
-    "sass",
-    "ui kit",
-    "webapp"
-  ],
-  "homepage": "https://coreui.io",
-  "bugs": {
-    "url": "https://github.com/coreui/coreui-free-bootstrap-admin-template/issues",
-    "email": "support@coreui.io"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "creativeLabs Łukasz Holeczek",
-    "url": "https://coreui.io",
-    "github": "https://github.com/coreui",
-    "twitter": "https://twitter.com/core_ui"
-  },
-  "contributors": [
-    {
-      "name": "CoreUI Core Team",
-      "url": "https://github.com/orgs/coreui/people"
-    }
-  ],
   "main": "src/index.html",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/coreui/coreui-free-bootstrap-admin-template.git"
-  },
   "scripts": {
     "dev": "parcel src/index.html src/users.html ",
-    "build": "parcel build src/index.html src/users.html "
+    "build": "parcel build src/index.html src/users.html ",
+    "nuke": "rimraf .cache dist"
   },
   "dependencies": {
     "@coreui/chartjs": "^2.0.0",
@@ -54,15 +19,17 @@
     "perfect-scrollbar": "1.5.0",
     "sweetalert2": "^9.14.2",
     "toastr": "^2.1.4",
-	"tombalaApi":"git+ssh://git@github.com:game-system/tombalaUiRequests.git#0.1.0"
+    "tombalaApi": "git+ssh://git@github.com:game-system/tombalaUiRequests.git#0.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",
+    "@types/": "coreui/coreui",
     "@types/handlebars": "^4.1.0",
     "@types/node": "^14.0.11",
     "@types/sweetalert": "^2.0.4",
     "@types/toastr": "^2.1.38",
     "parcel-bundler": "^1.12.4",
+    "rimraf": "^3.0.2",
     "sass": "^1.26.8",
     "typescript": "^3.9.5"
   }

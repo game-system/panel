@@ -1,17 +1,24 @@
 import toastr from "toastr";
 import cfg from "../config"
 import "toastr/build/toastr.min.css";
+import "@coreui/icons/css/all.min.css"
 import HandleBars from "handlebars"
 import { Config, Request, User } from "tombalaApi"
+//@ts-ignore
+import { Modal } from "@coreui/coreui"
 
 class Users extends Request {
 	myData?: User;
 	myChildren: User[] = [];
 	usersTemplate = fetch(require("../partials/usersTable.hbs")).then(d => d.text()).then(HandleBars.compile);
+	modal: any;
+	modalBody?: HTMLElement;
 	constructor(c: Config) {
 		super(c)
 		const that = this
 		window.addEventListener("DOMContentLoaded", () => {
+			that.modalBody = document.getElementById("actionModal") || undefined
+			that.modal = new Modal(that.modalBody, {})
 			that.getMyData()
 				.then(d => that.myData = d)
 				.then(() => that.updateUiMydata())
@@ -21,8 +28,45 @@ class Users extends Request {
 					return c
 				}))
 				.then(that.updateChildrenData.bind(that))
-
+			that.addNewUserUi()
 		})
+	}
+	addNewUserUi() {
+		const that = this;
+		const btn = document.getElementById("new_user_btn");
+		function handleSubmit(el: HTMLFormElement | null|undefined) {
+			return (e: Event) => {
+				e.preventDefault();
+				const id= (el?.querySelector("input[type='text']") as HTMLInputElement|null);
+				const pass = (el?.querySelector("input[type='password']") as HTMLInputElement|null);
+				if(!id?.value) return id?.focus()
+				if(!pass?.value) return pass?.focus()
+				that.addChild({id:id?.value||"",password:pass?.value||""} as User)
+				.then(({data,reason,success})=>{
+					if(!success)
+						return Promise.reject(toastr.error("Hata",reason))
+					data.date_str=new Date(data.created_at*1000).toISOString().split("T")[0];
+					that.myChildren.unshift(data)
+					that.updateChildrenData()
+					return true
+				}).then(()=>{
+					toastr.success("İşlem Başarılı")
+					that.modal.hide()
+				})
+			}
+		}
+		btn?.addEventListener("click", () => {
+			fetch(require("../partials/addUserModal.hbs"))
+				.then(d => d.text())
+				.then(d => {
+					that.modalBody && (that.modalBody.innerHTML = d)
+					const form = that.modalBody?.querySelector("form")
+					that.modalBody?.querySelector("#submitNewAddUser")?.addEventListener("click", handleSubmit(form))
+					form?.addEventListener("submit", handleSubmit(form))
+					that.modal.toggle()
+				})
+		})
+
 	}
 	updateChildrenData() {
 		const that = this;
@@ -57,6 +101,7 @@ class Users extends Request {
 				return data;
 			})
 	}
+	async addChildPopUp() { }
 }
 cfg().then(c =>
 	//@ts-ignore

@@ -27,7 +27,7 @@ export default class Login extends Request {
 		.then(({success,reason})=>{
 			console.log(reason)
 			if (!success){
-				swal.fire("Hata","test","error")
+				swal.fire("Hata",reason,"error")
 			}else{
 				swal.fire("Giriş Başarılı","","success")
 				setTimeout(()=>{location.pathname="users.html" },1000)
