@@ -2,7 +2,7 @@ import toastr from "toastr";
 import cfg from "../config"
 import "toastr/build/toastr.min.css";
 import "@coreui/icons/css/all.min.css"
-import HandleBars from "handlebars"
+import Handlebars from "handlebars"
 import { Config, Request, User } from "tombalaApi"
 //@ts-ignore
 import { Modal } from "@coreui/coreui"
@@ -10,15 +10,16 @@ import { Modal } from "@coreui/coreui"
 class Users extends Request {
 	myData?: User;
 	myChildren: User[] = [];
-	usersTemplate = fetch(require("../partials/usersTable.hbs")).then(d => d.text()).then(HandleBars.compile);
+	usersTemplate = fetch(require("../partials/usersTable.hbs")).then(d => d.text()).then(Handlebars.compile);
 	modal: any;
 	modalBody?: HTMLElement;
 	constructor(c: Config) {
 		super(c)
 		const that = this
 		window.addEventListener("DOMContentLoaded", () => {
-			that.modalBody = document.getElementById("actionModal") || undefined
-			that.modal = new Modal(that.modalBody, {})
+			const mdlEl= document.getElementById("actionModal") || undefined
+			that.modal = new Modal(mdlEl, {})
+			that.modalBody=mdlEl?.querySelector(".modal-dialog")||undefined;
 			that.getMyData()
 				.then(d => that.myData = d)
 				.then(() => that.updateUiMydata())
@@ -75,6 +76,7 @@ class Users extends Request {
 			return t(that.myChildren)
 		}).then(tpl => {
 			el && (el.innerHTML = tpl)
+			that.modalBody&&new UsersTableButtonActivities(that.myChildren,that.modalBody,that.modal)
 		})
 	}
 	updateUiMydata() {
@@ -107,3 +109,35 @@ cfg().then(c =>
 	//@ts-ignore
 	window.context = new Users(c)
 )
+
+class UsersTableButtonActivities{
+	deleters:HTMLElement[] = [].slice.call(document.querySelectorAll(".sil_btn"));
+	editers:HTMLElement[] = [].slice.call(document.querySelectorAll(".editle_btn"));
+	money_opers:HTMLElement[] = [].slice.call(document.querySelectorAll(".para_at_btn"));
+	users:User[]=[]
+	tpl=fetch(require("../partials/deleteUser.hbs")).then(d=>d.text()).then(Handlebars.compile.bind(this))
+	constructor(u:User[],modalEl:HTMLElement,modal:any){
+		this.users=u
+		this.editers.forEach(e=>{
+			e.addEventListener("click",()=>{
+				console.log(`editing ${e.dataset.user}`)
+			})
+		})
+		this.money_opers.forEach(e=>{
+			e.addEventListener("click",()=>{
+				console.log(`money ${e.dataset.user}`)
+			})
+		})
+		this.deleters.forEach(e=>{
+			e.addEventListener("click",()=>{
+				const user = u.filter(usr=>usr.id==e.dataset.user)[0];
+				if (!user)return toastr.error("Hata","Geçersiz kullanıcı idsi, Lütfen bizi arayın")
+					this.tpl.then((t)=>{
+						modalEl.innerHTML=t(user)
+						modal.show()
+					})
+			return null
+			})
+		})
+	}
+}
