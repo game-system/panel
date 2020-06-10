@@ -11,15 +11,16 @@ class Users extends Request {
 	myData?: User;
 	myChildren: User[] = [];
 	usersTemplate = fetch(require("../partials/usersTable.hbs")).then(d => d.text()).then(Handlebars.compile);
+	userDeleteTpl = fetch(require("../partials/deleteUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
 	modal: any;
 	modalBody?: HTMLElement;
 	constructor(c: Config) {
 		super(c)
 		const that = this
 		window.addEventListener("DOMContentLoaded", () => {
-			const mdlEl= document.getElementById("actionModal") || undefined
+			const mdlEl = document.getElementById("actionModal") || undefined
 			that.modal = new Modal(mdlEl, {})
-			that.modalBody=mdlEl?.querySelector(".modal-dialog")||undefined;
+			that.modalBody = mdlEl?.querySelector(".modal-dialog") || undefined;
 			that.getMyData()
 				.then(d => that.myData = d)
 				.then(() => that.updateUiMydata())
@@ -35,25 +36,25 @@ class Users extends Request {
 	addNewUserUi() {
 		const that = this;
 		const btn = document.getElementById("new_user_btn");
-		function handleSubmit(el: HTMLFormElement | null|undefined) {
+		function handleSubmit(el: HTMLFormElement | null | undefined) {
 			return (e: Event) => {
 				e.preventDefault();
-				const id= (el?.querySelector("input[type='text']") as HTMLInputElement|null);
-				const pass = (el?.querySelector("input[type='password']") as HTMLInputElement|null);
-				if(!id?.value) return id?.focus()
-				if(!pass?.value) return pass?.focus()
-				that.addChild({id:id?.value||"",password:pass?.value||""} as User)
-				.then(({data,reason,success})=>{
-					if(!success)
-						return Promise.reject(toastr.error("Hata",reason))
-					data.date_str=new Date(data.created_at*1000).toISOString().split("T")[0];
-					that.myChildren.unshift(data)
-					that.updateChildrenData()
-					return true
-				}).then(()=>{
-					toastr.success("İşlem Başarılı")
-					that.modal.hide()
-				})
+				const id = (el?.querySelector("input[type='text']") as HTMLInputElement | null);
+				const pass = (el?.querySelector("input[type='password']") as HTMLInputElement | null);
+				if (!id?.value) return id?.focus()
+				if (!pass?.value) return pass?.focus()
+				that.addChild({ id: id?.value || "", password: pass?.value || "" } as User)
+					.then(({ data, reason, success }) => {
+						if (!success)
+							return Promise.reject(toastr.error("Hata", reason))
+						data.date_str = new Date(data.created_at * 1000).toISOString().split("T")[0];
+						that.myChildren.unshift(data)
+						that.updateChildrenData()
+						return true
+					}).then(() => {
+						toastr.success("İşlem Başarılı")
+						that.modal.hide()
+					})
 			}
 		}
 		btn?.addEventListener("click", () => {
@@ -73,11 +74,27 @@ class Users extends Request {
 		const that = this;
 		const el = document.querySelector("#users_table")
 		that.usersTemplate.then(t => {
-			return t(that.myChildren)
+			return t({
+				children: that.myChildren,
+			})
 		}).then(tpl => {
 			el && (el.innerHTML = tpl)
-			that.modalBody&&new UsersTableButtonActivities(that.myChildren,that.modalBody,that.modal)
 		})
+	}
+	onMoneyClickHandler(uid:string) {
+		console.log(uid)
+	}
+	onUserEditClickHandler(uid:string) {
+		console.log(uid)
+	}
+	onUserDeleteClickHandler(uid:string) {
+		const user = this.myChildren.filter(usr => usr.id == uid)[0];
+		if (!user) return toastr.error("Hata", "Geçersiz kullanıcı idsi, Lütfen bizi arayın")
+			this.userDeleteTpl.then((t) => {
+				this.modalBody&&(this.modalBody.innerHTML = t(user))
+				this.modal.show()
+			})
+			return null
 	}
 	updateUiMydata() {
 		const that = this;
@@ -86,58 +103,27 @@ class Users extends Request {
 	}
 	async getMyData(): Promise<User> {
 		return this.me()
-			.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
-			.then(({ success, data, reason }) => {
-				if (!success)
-					return Promise.reject(toastr.error("Hata", reason));
-				return data;
-			})
+		.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
+		.then(({ success, data, reason }) => {
+			if (!success)
+				return Promise.reject(toastr.error("Hata", reason));
+			return data;
+		})
 	}
 
 	async getMyChildren(): Promise<User[]> {
 		return this.children()
-			.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
-			.then(({ success, data, reason }) => {
-				if (!success)
-					return Promise.reject(toastr.error("Hata", reason));
-				return data;
-			})
+		.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
+		.then(({ success, data, reason }) => {
+			if (!success)
+				return Promise.reject(toastr.error("Hata", reason));
+			return data;
+		})
 	}
 	async addChildPopUp() { }
 }
 cfg().then(c =>
-	//@ts-ignore
-	window.context = new Users(c)
-)
+		   //@ts-ignore
+		   window.ctx = new Users(c)
+		  )
 
-class UsersTableButtonActivities{
-	deleters:HTMLElement[] = [].slice.call(document.querySelectorAll(".sil_btn"));
-	editers:HTMLElement[] = [].slice.call(document.querySelectorAll(".editle_btn"));
-	money_opers:HTMLElement[] = [].slice.call(document.querySelectorAll(".para_at_btn"));
-	users:User[]=[]
-	tpl=fetch(require("../partials/deleteUser.hbs")).then(d=>d.text()).then(Handlebars.compile.bind(this))
-	constructor(u:User[],modalEl:HTMLElement,modal:any){
-		this.users=u
-		this.editers.forEach(e=>{
-			e.addEventListener("click",()=>{
-				console.log(`editing ${e.dataset.user}`)
-			})
-		})
-		this.money_opers.forEach(e=>{
-			e.addEventListener("click",()=>{
-				console.log(`money ${e.dataset.user}`)
-			})
-		})
-		this.deleters.forEach(e=>{
-			e.addEventListener("click",()=>{
-				const user = u.filter(usr=>usr.id==e.dataset.user)[0];
-				if (!user)return toastr.error("Hata","Geçersiz kullanıcı idsi, Lütfen bizi arayın")
-					this.tpl.then((t)=>{
-						modalEl.innerHTML=t(user)
-						modal.show()
-					})
-			return null
-			})
-		})
-	}
-}

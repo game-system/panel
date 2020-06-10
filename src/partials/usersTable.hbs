@@ -1,12 +1,12 @@
-{{#each this}}
+{{#each children}}
 	<tr>
 		<td>{{id}}</td>
 		<td>{{#if date_str}}{{date_str}} {{else}} {{created_at}}{{/if}}</td>
 		<td><input type="checkbox" {{#if is_disabled}} checked {{/if}} disabled></td>
 		<td class="font-weight-bold">
-			<div data-user={{id}} class="para_at_btn btn btn-success p-1"><span style="font-size:1.3rem" class="cil-plus btn-icon p-1"></span></div>
-			<div data-user={{id}} class="editle_btn btn btn-info p-1"><span    style="font-size:1.3rem" class="cil-pencil btn-icon p-1"></span></div>
-			<div data-user={{id}} class="sil_btn btn btn-danger p-1"><span  style="font-size:1.3rem" class="cil-ban btn-icon p-1"></span></div>
+			<div onclick="ctx.onMoneyClickHandler('{{id}}')" class="btn btn-success p-1"><span style="font-size:1.3rem" class="cil-plus btn-icon p-1"></span></div>
+			<div onclick="ctx.onUserEditClickHandler('{{id}}')" class="btn btn-info p-1"><span    style="font-size:1.3rem" class="cil-pencil btn-icon p-1"></span></div>
+			<div onclick="ctx.onUserDeleteClickHandler('{{id}}')" class="btn btn-danger p-1"><span  style="font-size:1.3rem" class="cil-ban btn-icon p-1"></span></div>
 		</td>
 	</tr>
 {{/each}}
