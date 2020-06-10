@@ -29,7 +29,7 @@ class Users extends Request {
 					c.date_str = new Date(c.created_at * 1000).toISOString().split("T")[0];
 					return c
 				}))
-				.then(that.updateChildrenData.bind(that))
+				.then(that.updateChildrenUI.bind(that))
 			that.addNewUserUi()
 		})
 	}
@@ -49,7 +49,7 @@ class Users extends Request {
 							return Promise.reject(toastr.error("Hata", reason))
 						data.date_str = new Date(data.created_at * 1000).toISOString().split("T")[0];
 						that.myChildren.unshift(data)
-						that.updateChildrenData()
+						that.updateChildrenUI()
 						return true
 					}).then(() => {
 						toastr.success("İşlem Başarılı")
@@ -70,7 +70,7 @@ class Users extends Request {
 		})
 
 	}
-	updateChildrenData() {
+	updateChildrenUI() {
 		const that = this;
 		const el = document.querySelector("#users_table")
 		that.usersTemplate.then(t => {
@@ -93,6 +93,21 @@ class Users extends Request {
 			this.userDeleteTpl.then((t) => {
 				this.modalBody&&(this.modalBody.innerHTML = t(user))
 				this.modal.show()
+				return this.modalBody?.querySelector("#doDeleteUser") as HTMLElement|undefined
+			}).then(el=>{
+				if(!el)return
+					el.onclick=()=>{
+						this.deleteChild(user,true)
+						.then(({success,reason})=>{
+								if(!success)
+									return toastr.error("HATA",reason+'')
+								toastr.success("Silindi")
+								this.myChildren=this.myChildren.filter(u=>u.id!=uid)
+								this.updateChildrenUI()
+								this.modal.hide()
+								return true
+						})
+					}
 			})
 			return null
 	}
