@@ -6,9 +6,7 @@ window.logout_a.addEventListener("click",e=>{
 	e.preventDefault()
 	toastr.success("Çıkış Yapılıyor","",{positionClass:"toast-top-full-width"})
 	//@ts-ignore
-	fetch(`${context.apiAddr}/users/logout`,{credentials:"include"})
-	.then(()=>{
-		setTimeout(()=>{location.pathname="index.html"},300)
-	})
+	fetch(`${ctx.apiAddr}/users/logout`,{credentials:"include"})
+	setTimeout(()=>{location.pathname="index.html"},300)
 })
 
