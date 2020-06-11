@@ -5,6 +5,7 @@
   "main": "src/index.html",
   "scripts": {
     "dev": "parcel src/index.html src/users.html ",
+    "watch": "parcel watch src/index.html src/users.html ",
     "build": "parcel build src/index.html src/users.html ",
     "nuke": "rimraf .cache dist"
   },
@@ -19,7 +20,7 @@
     "perfect-scrollbar": "1.5.0",
     "sweetalert2": "^9.14.2",
     "toastr": "^2.1.4",
-    "tombalaApi": "git+https://github.com/game-system/tombalaUiRequests.git#0.4.0"
+    "tombalaApi": "git+https://github.com/game-system/tombalaUiRequests.git#0.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",
