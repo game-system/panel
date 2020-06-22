@@ -12,6 +12,8 @@ class Users extends Request {
 	myChildren: User[] = [];
 	usersTemplate = fetch(require("../partials/usersTable.hbs")).then(d => d.text()).then(Handlebars.compile);
 	userDeleteTpl = fetch(require("../partials/deleteUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
+	moneyTransferTpl = fetch(require("../partials/moneyTransfer.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
+	editUserTpl = fetch(require("../partials/moneyTransfer.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
 	modal: any;
 	modalBody?: HTMLElement;
 	constructor(c: Config) {
@@ -82,7 +84,17 @@ class Users extends Request {
 		})
 	}
 	onMoneyClickHandler(uid:string) {
-		console.log(uid)
+		const user = this.myChildren.filter(usr => usr.id == uid)[0];
+		if (!user) return toastr.error("Hata", "Geçersiz kullanıcı idsi, Lütfen bizi arayın")
+			this.moneyTransferTpl.then((t) => {
+				this.modalBody&&(this.modalBody.innerHTML = t(user))
+				this.modal.show()
+				return this.modalBody?.querySelector("#pushMoney") as HTMLElement|undefined
+			}).then(el=>{
+				if(!el)return
+					
+			})
+			return null
 	}
 	onUserEditClickHandler(uid:string) {
 		console.log(uid)
