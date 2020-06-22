@@ -10,8 +10,9 @@ import { Modal } from "@coreui/coreui"
 class Users extends Request {
 	myData?: User;
 	myChildren: User[] = [];
-	usersTemplate = fetch(require("../partials/usersTable.hbs")).then(d => d.text()).then(Handlebars.compile);
+	usersTemplate = fetch(require("../partials/usersTable.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
 	userDeleteTpl = fetch(require("../partials/deleteUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
+	userEditTpl = fetch(require("../partials/editUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
 	modal: any;
 	modalBody?: HTMLElement;
 	constructor(c: Config) {
@@ -81,35 +82,66 @@ class Users extends Request {
 			el && (el.innerHTML = tpl)
 		})
 	}
-	onMoneyClickHandler(uid:string) {
+	onMoneyClickHandler(uid: string) {
 		console.log(uid)
 	}
-	onUserEditClickHandler(uid:string) {
-		console.log(uid)
+	onUserEditClickHandler(uid: string) {
+		const user = this.myChildren.filter(u => u.id == uid);
+		if (!user) return
+		this.userEditTpl.then(t => t(user))
+			.then()
+
 	}
-	onUserDeleteClickHandler(uid:string) {
+	onUserDeleteClickHandler(uid: string) {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
 		if (!user) return toastr.error("Hata", "Geçersiz kullanıcı idsi, Lütfen bizi arayın")
-			this.userDeleteTpl.then((t) => {
-				this.modalBody&&(this.modalBody.innerHTML = t(user))
-				this.modal.show()
-				return this.modalBody?.querySelector("#doDeleteUser") as HTMLElement|undefined
-			}).then(el=>{
-				if(!el)return
-					el.onclick=()=>{
-						this.deleteChild(user,true)
-						.then(({success,reason})=>{
-								if(!success)
-									return toastr.error("HATA",reason+'')
-								toastr.success("Silindi")
-								this.myChildren=this.myChildren.filter(u=>u.id!=uid)
-								this.updateChildrenUI()
-								this.modal.hide()
-								return true
-						})
-					}
+		this.userDeleteTpl.then((t) => {
+			this.modalBody && (this.modalBody.innerHTML = t(user))
+			this.modal.show()
+			return ["doDeleteUser", "doEnableUser", "doDisableUser"].map(s => this.modalBody?.querySelector("#" + s)) as (HTMLElement | undefined)[]
+		}).then(([delel, enableEl, disableEl]) => {
+			delel?.addEventListener("click", () => {
+				this.deleteChild(user, true)
+					.then(({ success, reason }) => {
+						if (!success)
+							return toastr.error("HATA", reason + '')
+						toastr.success("Silindi")
+						this.myChildren = this.myChildren.filter(u => u.id != uid)
+						this.updateChildrenUI()
+						this.modal.hide()
+						return true
+					})
 			})
-			return null
+			enableEl?.addEventListener("click", () => {
+				this.enableChild(user, true)
+					.then(({ success, reason }) => {
+						if (!success)
+							return toastr.error("HATA", reason + '')
+						toastr.success("Başarı")
+						this.myChildren.forEach(u => {
+							u.id == uid && (u.is_disabled = false)
+						})
+						this.updateChildrenUI()
+						this.modal.hide()
+						return true
+					})
+			})
+			disableEl?.addEventListener("click", () => {
+				this.disableChild(user, true)
+					.then(({ success, reason }) => {
+						if (!success)
+							return toastr.error("HATA", reason + '')
+						toastr.success("Engellendi")
+						this.myChildren.forEach(u => {
+							u.id == uid && (u.is_disabled = true)
+						})
+						this.updateChildrenUI()
+						this.modal.hide()
+						return true
+					})
+			})
+		})
+		return null
 	}
 	updateUiMydata() {
 		const that = this;
@@ -118,27 +150,25 @@ class Users extends Request {
 	}
 	async getMyData(): Promise<User> {
 		return this.me()
-		.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
-		.then(({ success, data, reason }) => {
-			if (!success)
-				return Promise.reject(toastr.error("Hata", reason));
-			return data;
-		})
+			.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
+			.then(({ success, data, reason }) => {
+				if (!success)
+					return Promise.reject(toastr.error("Hata", reason));
+				return data;
+			})
 	}
-
 	async getMyChildren(): Promise<User[]> {
 		return this.children()
-		.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
-		.then(({ success, data, reason }) => {
-			if (!success)
-				return Promise.reject(toastr.error("Hata", reason));
-			return data;
-		})
+			.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
+			.then(({ success, data, reason }) => {
+				if (!success)
+					return Promise.reject(toastr.error("Hata", reason));
+				return data;
+			})
 	}
-	async addChildPopUp() { }
 }
 cfg().then(c =>
-		   //@ts-ignore
-		   window.ctx = new Users(c)
-		  )
+	//@ts-ignore
+	window.ctx = new Users(c)
+)
 
