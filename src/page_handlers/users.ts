@@ -10,7 +10,7 @@ import { Modal } from "@coreui/coreui"
 class Users extends Request {
 	myData?: User;
 	myChildren: User[] = [];
-	usersTemplate = fetch(require("../partials/usersTable.hbs")).then(d => d.text()).then(Handlebars.compile);
+	usersTemplate = fetch(require("../partials/usersTable.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
 	userDeleteTpl = fetch(require("../partials/deleteUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
 	moneyTransferTpl = fetch(require("../partials/moneyTransfer.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
 	editUserTpl = fetch(require("../partials/editUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
@@ -130,10 +130,9 @@ class Users extends Request {
 		this.userDeleteTpl.then((t) => {
 			this.modalBody && (this.modalBody.innerHTML = t(user))
 			this.modal.show()
-			return this.modalBody?.querySelector("#doDeleteUser") as HTMLElement | undefined
-		}).then(el => {
-			if (!el) return
-			el.onclick = () => {
+			return ["doDeleteUser", "doEnableUser", "doDisableUser"].map(s => this.modalBody?.querySelector("#" + s)) as (HTMLElement | undefined)[]
+		}).then(([delel, enableEl, disableEl]) => {
+			delel?.addEventListener("click", () => {
 				this.deleteChild(user, true)
 					.then(({ success, reason }) => {
 						if (!success)
@@ -144,7 +143,35 @@ class Users extends Request {
 						this.modal.hide()
 						return true
 					})
-			}
+			})
+			enableEl?.addEventListener("click", () => {
+				this.enableChild(user, true)
+					.then(({ success, reason }) => {
+						if (!success)
+							return toastr.error("HATA", reason + '')
+						toastr.success("Başarı")
+						this.myChildren.forEach(u => {
+							u.id == uid && (u.is_disabled = false)
+						})
+						this.updateChildrenUI()
+						this.modal.hide()
+						return true
+					})
+			})
+			disableEl?.addEventListener("click", () => {
+				this.disableChild(user, true)
+					.then(({ success, reason }) => {
+						if (!success)
+							return toastr.error("HATA", reason + '')
+						toastr.success("Engellendi")
+						this.myChildren.forEach(u => {
+							u.id == uid && (u.is_disabled = true)
+						})
+						this.updateChildrenUI()
+						this.modal.hide()
+						return true
+					})
+			})
 		})
 		return null
 	}
@@ -162,7 +189,6 @@ class Users extends Request {
 				return data;
 			})
 	}
-
 	async getMyChildren(): Promise<User[]> {
 		return this.children()
 			.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
@@ -172,7 +198,6 @@ class Users extends Request {
 				return data;
 			})
 	}
-	async addChildPopUp() { }
 }
 cfg().then(c =>
 	//@ts-ignore
