@@ -13,7 +13,7 @@ class Users extends Request {
 	usersTemplate = fetch(require("../partials/usersTable.hbs")).then(d => d.text()).then(Handlebars.compile);
 	userDeleteTpl = fetch(require("../partials/deleteUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
 	moneyTransferTpl = fetch(require("../partials/moneyTransfer.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
-	editUserTpl = fetch(require("../partials/moneyTransfer.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
+	editUserTpl = fetch(require("../partials/editUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
 	modal: any;
 	modalBody?: HTMLElement;
 	constructor(c: Config) {
@@ -83,45 +83,70 @@ class Users extends Request {
 			el && (el.innerHTML = tpl)
 		})
 	}
-	onMoneyClickHandler(uid:string) {
+	onMoneyClickHandler(uid: string) {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
 		if (!user) return toastr.error("Hata", "Geçersiz kullanıcı idsi, Lütfen bizi arayın")
-			this.moneyTransferTpl.then((t) => {
-				this.modalBody&&(this.modalBody.innerHTML = t(user))
-				this.modal.show()
-				return this.modalBody?.querySelector("#pushMoney") as HTMLElement|undefined
-			}).then(el=>{
-				if(!el)return
-					
-			})
-			return null
+		this.moneyTransferTpl.then((t) => {
+			this.modalBody && (this.modalBody.innerHTML = t(user))
+			this.modal.show()
+			return this.modalBody?.querySelector("#pushMoney") as HTMLElement | undefined
+		}).then(el => {
+			if (!el) return
+
+		})
+		return null
 	}
-	onUserEditClickHandler(uid:string) {
-		console.log(uid)
+	onUserEditClickHandler(uid: string) {
+		const user = this.myChildren.filter(usr => usr.id == uid)[0];
+		console.log(user);
+		if (!user) return toastr.error("Hata", "Geçersiz kullanıcı idsi, Lütfen bizi arayın")
+		this.editUserTpl.then((t) => {
+			this.modalBody && (this.modalBody.innerHTML = t(user))
+			this.modal.show()
+			return this.modalBody?.querySelector("#saveUserData") as HTMLElement | undefined
+		}).then(el => {
+			if (!el) return
+			let userInfo: { email: string, phone: string, password: string }={} as { email: string, phone: string, password: string }
+			el.onclick = () => {
+				const userInfoElems = this.modalBody?.querySelectorAll('.form-control') as HTMLInputElement[] | undefined;
+				if (!userInfoElems) return;
+				if (userInfoElems[0]?.value) userInfo.email = userInfoElems[0].value;
+				if (userInfoElems[1]?.value) userInfo.phone = userInfoElems[1].value;
+				if (userInfoElems[2]?.value) userInfo.password = userInfoElems[2].value;
+				this.updateProfile(user, userInfo)
+					.catch(() => Promise.reject(toastr.error('İşlem gerçekleşmedi', 'Hata')))
+					.then(({ success, reason }) => {
+						if (!success) return Promise.reject(toastr.error(reason || '', 'Hata'));
+						return toastr.success('İşlem başarıyla gerçekleşti', 'başarılı');
+					})
+			}
+		})
+		return null
 	}
-	onUserDeleteClickHandler(uid:string) {
+
+	onUserDeleteClickHandler(uid: string) {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
 		if (!user) return toastr.error("Hata", "Geçersiz kullanıcı idsi, Lütfen bizi arayın")
-			this.userDeleteTpl.then((t) => {
-				this.modalBody&&(this.modalBody.innerHTML = t(user))
-				this.modal.show()
-				return this.modalBody?.querySelector("#doDeleteUser") as HTMLElement|undefined
-			}).then(el=>{
-				if(!el)return
-					el.onclick=()=>{
-						this.deleteChild(user,true)
-						.then(({success,reason})=>{
-								if(!success)
-									return toastr.error("HATA",reason+'')
-								toastr.success("Silindi")
-								this.myChildren=this.myChildren.filter(u=>u.id!=uid)
-								this.updateChildrenUI()
-								this.modal.hide()
-								return true
-						})
-					}
-			})
-			return null
+		this.userDeleteTpl.then((t) => {
+			this.modalBody && (this.modalBody.innerHTML = t(user))
+			this.modal.show()
+			return this.modalBody?.querySelector("#doDeleteUser") as HTMLElement | undefined
+		}).then(el => {
+			if (!el) return
+			el.onclick = () => {
+				this.deleteChild(user, true)
+					.then(({ success, reason }) => {
+						if (!success)
+							return toastr.error("HATA", reason + '')
+						toastr.success("Silindi")
+						this.myChildren = this.myChildren.filter(u => u.id != uid)
+						this.updateChildrenUI()
+						this.modal.hide()
+						return true
+					})
+			}
+		})
+		return null
 	}
 	updateUiMydata() {
 		const that = this;
@@ -130,27 +155,27 @@ class Users extends Request {
 	}
 	async getMyData(): Promise<User> {
 		return this.me()
-		.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
-		.then(({ success, data, reason }) => {
-			if (!success)
-				return Promise.reject(toastr.error("Hata", reason));
-			return data;
-		})
+			.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
+			.then(({ success, data, reason }) => {
+				if (!success)
+					return Promise.reject(toastr.error("Hata", reason));
+				return data;
+			})
 	}
 
 	async getMyChildren(): Promise<User[]> {
 		return this.children()
-		.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
-		.then(({ success, data, reason }) => {
-			if (!success)
-				return Promise.reject(toastr.error("Hata", reason));
-			return data;
-		})
+			.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
+			.then(({ success, data, reason }) => {
+				if (!success)
+					return Promise.reject(toastr.error("Hata", reason));
+				return data;
+			})
 	}
 	async addChildPopUp() { }
 }
 cfg().then(c =>
-		   //@ts-ignore
-		   window.ctx = new Users(c)
-		  )
+	//@ts-ignore
+	window.ctx = new Users(c)
+)
 
