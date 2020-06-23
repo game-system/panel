@@ -1,9 +1,9 @@
 import toastr from "toastr";
-import cfg from "../config"
+import { default as cfg, Config } from "../config"
 import "toastr/build/toastr.min.css";
 import "@coreui/icons/css/all.min.css"
 import Handlebars from "handlebars"
-import { Config, Request, User } from "tombalaApi"
+import { Request, User } from "tombalaApi"
 //@ts-ignore
 import { Modal } from "@coreui/coreui"
 
@@ -16,8 +16,10 @@ class Users extends Request {
 	editUserTpl = fetch(require("../partials/editUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
 	modal: any;
 	modalBody?: HTMLElement;
+	cfg: Config = {} as Config;
 	constructor(c: Config) {
 		super(c)
+		this.cfg = c;
 		const that = this
 		window.addEventListener("DOMContentLoaded", () => {
 			const mdlEl = document.getElementById("actionModal") || undefined
@@ -86,19 +88,37 @@ class Users extends Request {
 	onMoneyClickHandler(uid: string) {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
 		if (!user) return toastr.error("Hata", "Geçersiz kullanıcı idsi, Lütfen bizi arayın")
-		this.moneyTransferTpl.then((t) => {
-			this.modalBody && (this.modalBody.innerHTML = t(user))
-			this.modal.show()
-			return this.modalBody?.querySelector("#pushMoney") as HTMLElement | undefined
-		}).then(el => {
-			if (!el) return
+		this.getWallets(user, this.cfg.gameIds)
+			.catch(() => Promise.reject(toastr.error('Network Hatası', 'HATA')))//TODO: Error Mesajı yaz 
+			.then(({ success, reason, data }) => {
+				console.log(data);
+				data.push(data[0]);
+				data.push(data[0]);
+				data.push(data[0]);
+				data.push(data[0]);
+				if (!success) return Promise.reject(toastr.error(reason || '', 'Hata'))
+				return Promise.all([this.moneyTransferTpl, data])
+			})
+			.then(([t, data]) => {
+				this.modalBody && (this.modalBody.innerHTML = t({ uid, data }))
+				this.modal.show();
+			})
+	}
+	updtCredit(uid: string, gameID: number, isReceive: boolean) {
+		const user = this.myChildren.filter(usr => usr.id == uid)[0];
+		const elems = [].slice.call(document.querySelector('#form_' + gameID)?.querySelectorAll('input')) as HTMLInputElement[];
+		if (!elems) return;
+		let credit = parseFloat(elems[0].value);
 
-		})
-		return null
+		this.updateCredit(user, isReceive ? Math.abs(credit) * -1 : credit, gameID, elems[1].checked)
+			.catch(() => Promise.reject(toastr.error('Network Hatası', 'HATA')))
+			.then(({ success, reason, data }) => {
+				if (!success) return Promise.reject(toastr.error(reason || '', 'HATA'));
+				console.log(data);
+			})
 	}
 	onUserEditClickHandler(uid: string) {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
-		console.log(user);
 		if (!user) return toastr.error("Hata", "Geçersiz kullanıcı idsi, Lütfen bizi arayın")
 		this.editUserTpl.then((t) => {
 			this.modalBody && (this.modalBody.innerHTML = t(user))
@@ -106,7 +126,7 @@ class Users extends Request {
 			return this.modalBody?.querySelector("#saveUserData") as HTMLElement | undefined
 		}).then(el => {
 			if (!el) return
-			let userInfo: { email: string, phone: string, password: string }={} as { email: string, phone: string, password: string }
+			let userInfo: { email: string, phone: string, password: string } = {} as { email: string, phone: string, password: string }
 			el.onclick = () => {
 				const userInfoElems = this.modalBody?.querySelectorAll('.form-control') as HTMLInputElement[] | undefined;
 				if (!userInfoElems) return;
