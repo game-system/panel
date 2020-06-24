@@ -1,7 +1,8 @@
 import toastr from "toastr";
 import { default as cfg, Config } from "../config"
 import "toastr/build/toastr.min.css";
-import "@coreui/icons/css/all.min.css"
+import "@coreui/icons/css/all.min.css";
+import '../css/users.css';
 import Handlebars from "handlebars"
 import { Request, User } from "tombalaApi"
 //@ts-ignore
@@ -91,11 +92,6 @@ class Users extends Request {
 		this.getWallets(user, this.cfg.gameIds)
 			.catch(() => Promise.reject(toastr.error('Network Hatası', 'HATA')))//TODO: Error Mesajı yaz 
 			.then(({ success, reason, data }) => {
-				console.log(data);
-				data.push(data[0]);
-				data.push(data[0]);
-				data.push(data[0]);
-				data.push(data[0]);
 				if (!success) return Promise.reject(toastr.error(reason || '', 'Hata'))
 				return Promise.all([this.moneyTransferTpl, data])
 			})

@@ -7,7 +7,7 @@
   </div>
   {{#each data}}
   <div class="modal-body">
-    <div>
+    <div class='count-status'>
       <span>kredi: {{balance}}</span>
       <span>bonus kredi: {{bonus_balance}}</span>
       <span>oyun adı: {{game_name}}</span>
@@ -22,10 +22,13 @@
       <div>
         <input type="checkbox" /><label>Bonus Kredi</label>
       </div>
-      <button id='pushMoney' type="submit" onclick='ctx.updtCredit("{{@root.uid}}",{{game_id}},false)'
-        class="btn btn-primary" data-dismiss="modal">Gönder</button>
-      <button id='pullMoney' type="button" onclick='ctx.updtCredit("{{@root.uid}}",{{game_id}},true)'
-        class="btn btn-light" data-dismiss="modal">Çek</button>
+      <div class='button-area'>
+        <button id='pushMoney' type="submit" onclick='ctx.updtCredit("{{@root.uid}}",{{game_id}},false)'
+          class="btn btn-primary" data-dismiss="modal">Gönder</button>
+        <button id='pullMoney' type="button" onclick='ctx.updtCredit("{{@root.uid}}",{{game_id}},true)'
+          class="btn btn-light" data-dismiss="modal">Çek</button>
+      </div>
+
     </form>
   </div>
   {{/each}}
