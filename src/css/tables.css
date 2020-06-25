@@ -1,0 +1,51 @@
+.card,
+#new_table_group_btn {
+    box-shadow: 2px 2px 5px grey;
+}
+
+#new_table_group_btn {
+    margin-bottom: 10px;
+}
+
+.but-con {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.card-header {
+    padding: 0;
+}
+
+.tableGroups {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+.table-groups-con {
+    margin: 0;
+    padding: 0 !important;
+}
+
+.satir td {
+    padding: 0 !important;
+}
+
+.card-body {
+    padding: 0px;
+    height: 50px !important;
+}
+
+.table {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    height: 50px !important;
+    padding-left: 10px;
+    padding-right: 20px;
+}
