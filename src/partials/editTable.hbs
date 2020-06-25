@@ -1,0 +1,22 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title">Düzenle: {{name}}</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <input type="text" class="form-control" placeholder="{{#if name}} {{name}}{{else}}email{{/if}}">
+      <input type="number" class="form-control" placeholder="{{#if price}} {{price}}{{else}}email{{/if}}">
+      <input type="number" class="form-control" placeholder="{{#if c1}} {{c1}}{{else}}email{{/if}}">
+      <input type="number" class="form-control" placeholder="{{#if c2}} {{c2}}{{else}}email{{/if}}">
+      <input type="number" class="form-control" placeholder="{{#if t}} {{t}}{{else}}email{{/if}}">
+      <input type="number" class="form-control" placeholder="{{#if tulum}} {{tulum}}{{else}}email{{/if}}">
+      <button id='saveTableGroupData' type="button" class="btn btn-primary" data-dismiss="modal">Kaydet</button>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+  </div>
+</div>
