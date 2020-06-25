@@ -4,7 +4,7 @@ import "toastr/build/toastr.min.css";
 import "@coreui/icons/css/all.min.css";
 import '../css/users.css';
 import Handlebars from "handlebars"
-import { Request, User } from "tombalaApi"
+import { Request, User } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui"
 
