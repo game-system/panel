@@ -19,10 +19,37 @@
 
 .tableGroups {
     display: flex;
+    width: 100%;
     flex-direction: row;
-    justify-content: space-between;
     align-items: center;
     padding: 10px;
+}
+
+.tableGroups div {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: center;
+}
+
+.tableGroups div p {
+    margin: 0;
+}
+
+.tg-group_type,
+.tg-name {
+    flex: 2
+}
+
+.tg-bonus {
+    flex: .5;
+}
+
+.buttons {
+    flex: .7;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between !important;
 }
 
 .table-groups-con {
@@ -48,4 +75,19 @@
     height: 50px !important;
     padding-left: 10px;
     padding-right: 20px;
+}
+
+.table-name {
+    flex: 3;
+}
+
+.table-price,
+.table-c1,
+.table-c2 {
+    flex: 1;
+}
+
+.table-t,
+.table-tulum {
+    flex: 1.5;
 }

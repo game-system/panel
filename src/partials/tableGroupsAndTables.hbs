@@ -5,11 +5,10 @@
       <button class="btn btn-link but-con" type="button" data-toggle="collapse" data-target="#collapse_{{id}}"
         aria-expanded="true" aria-controls="collapse_{{id}}">
         <div class='tableGroups'>
-          <div>{{name}}</div>
-          <div>{{#if date_str}}{{date_str}} {{else}} {{created_at}}{{/if}}</div>
-          <div>{{group_type}}</div>
-          <div><input type="checkbox" {{#if is_bonus}} checked {{/if}} disabled></div>
-          <div class="font-weight-bold">
+          <div class='tg-name'><p>{{name}}</p></div>
+          <div class='tg-group_type'><p>{{group_type}}</p></div>
+          <div class='tg-bonus'><input type="checkbox" {{#if is_bonus}} checked {{/if}} disabled></div>
+          <div class="font-weight-bold buttons">
             <div onclick="ctx.onTableAddClickHandler('{{id}}')" class="btn btn-success p-1">
               <span style="font-size:1.3rem" class="cil-plus btn-icon p-1"></span>
             </div>
@@ -30,13 +29,12 @@
     {{#each tables}}
     <div class="card-body">
       <div class='table'>
-        <div>{{name}}</div>
-        <div>{{#if date_str}}{{date_str}} {{else}} {{created_at}}{{/if}}</div>
-        <div>Fiyat:{{price}}</div>
-        <div>C1:{{c1}}</div>
-        <div>C2:{{c2}}</div>
-        <div>Tombala:{{t}}</div>
-        <div>Tulum:{{tulum}}</div>
+        <div class='table-name'>{{name}}</div>
+        <div class='table-price'>Fiyat: {{price}}</div>
+        <div class='table-c1'>C1: {{c1}}</div>
+        <div class='table-c2'>C2: {{c2}}</div>
+        <div class='table-t'>Tombala: {{t}}</div>
+        <div class='table-tulum'>Tulum: {{tulum}}</div>
         <div class="font-weight-bold">
           <div onclick="ctx.onTableEditClickHandler('{{group_id}}','{{id}}')" class="btn btn-light p-1">
             <span style="font-size:1.3rem" class="cil-pencil btn-icon p-1"></span>
