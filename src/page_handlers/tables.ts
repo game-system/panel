@@ -35,6 +35,7 @@ class TableGroupsAndTables extends Request {
         .then(d => that.myTableGroups = d)
         .then(() => that.updateTableGroupUI());
       that.addNewTableGroupUi();
+
     })
   }
   addNewTableGroupUi() {
@@ -52,11 +53,11 @@ class TableGroupsAndTables extends Request {
           game_id: 1,
           name: tableGroupName.value,
           group_type: "SameCardSameRoomMultiBuy",
-          bonus: checkbox.checked,
+          is_bonus: checkbox.checked,
           seller_id: '_seller1',
           tables: [] as Table[]
         }
-        that.addTableGroup(_data.game_id, _data.name + '', 0, _data.bonus)
+        that.addTableGroup(_data.game_id, _data.name + '', 0, _data.is_bonus)
           .catch(er => Promise.reject(toastr.error(er, 'HATA')))
           .then(({ data, reason, success }) => {
             if (!success)
@@ -66,7 +67,6 @@ class TableGroupsAndTables extends Request {
             that.updateTableGroupUI();
             return true
           })
-
       }
     }
     btn?.addEventListener("click", () => {
@@ -92,7 +92,7 @@ class TableGroupsAndTables extends Request {
         const formInputElems: HTMLInputElement[] = [].slice.call(that.modalBody?.querySelector("form")?.querySelectorAll('input'))
         //@ts-ignore
         let t: Table = {
-          id: 5,
+          id: -1,
           group_id: id,
           name: formInputElems[0].value,
           price: parseInt(formInputElems[1].value),
@@ -146,7 +146,6 @@ class TableGroupsAndTables extends Request {
     })
   }
   onTableEditClickHandler(tableGroupID: number, id: number) {
-    console.log(tableGroupID, id);
     const that = this;
     const _table = this.myTableGroups.filter(tg => tg.id == tableGroupID)[0].tables.filter(t => t.id == id)[0];
     that.editTableTemplate.then(t => {
@@ -154,10 +153,8 @@ class TableGroupsAndTables extends Request {
       this.modal.show();
       this.modalBody?.querySelector('#saveTableGroupData')?.addEventListener('click', () => {
 
-        const formInputElems: HTMLInputElement[] = [].slice.call(that.modalBody?.querySelector("form")?.querySelectorAll('input'))
-        console.log(formInputElems);
-        //@ts-ignore
-        let table: Table = {};
+        const formInputElems: HTMLInputElement[] = [].slice.call(that.modalBody?.querySelector("form")?.querySelectorAll('input'));
+        let table: Table = {} as Table;
         table.id = id;
         table.group_id = tableGroupID;
         if (formInputElems[0].value) table.name = formInputElems[0].value;
@@ -165,20 +162,20 @@ class TableGroupsAndTables extends Request {
         if (formInputElems[2].value) table.c1 = parseInt(formInputElems[2].value);
         if (formInputElems[3].value) table.c2 = parseInt(formInputElems[3].value);
         if (formInputElems[4].value) table.t = parseInt(formInputElems[4].value);
-        if (formInputElems[5].value) table.tulum = parseInt(formInputElems[5].value),
-          that.updateTable(id, table)
-            .catch(er => Promise.reject(toastr.error(er, 'HATA')))
-            .then(({ data, reason, success }) => {
-              if (!success)
-                return Promise.reject(toastr.error(reason || '', 'HATA'));
-              that.updateTableGroupUI();
-              return
-            })
+        if (formInputElems[5].value) table.tulum = parseInt(formInputElems[5].value);
+        that.updateTable(id, table)
+          .catch(er => Promise.reject(toastr.error(er, 'HATA')))
+          .then(({ data, reason, success }) => {
+            if (!success)
+              return Promise.reject(toastr.error(reason || '', 'HATA'));
+
+            that.updateTableGroupUI();
+            return
+          })
       })
     })
   }
   onTableDeleteClickHandler(tableGroupID: number, id: number) {
-    console.log(tableGroupID, id);
     const that = this;
     const table = this.myTableGroups.filter(tg => tg.id == tableGroupID)[0].tables.filter(t => t.id == id)[0];
     that.delTableTemplate.then(t => {
@@ -190,6 +187,14 @@ class TableGroupsAndTables extends Request {
           .then(({ data, reason, success }) => {
             if (!success)
               return Promise.reject(toastr.error(reason || '', 'HATA'));
+            that.myTableGroups.forEach((tg, index) => {
+              if (tg.id == tableGroupID) {
+                tg.tables.forEach((t, i) => {
+                  if (t.id == id) that.myTableGroups[index].tables.splice(i, 1);
+                })
+              }
+
+            })
             that.updateTableGroupUI();
             return
           })
@@ -218,6 +223,8 @@ class TableGroupsAndTables extends Request {
       .then(({ success, data, reason }) => {
         if (!success)
           return Promise.reject(toastr.error("Hata", reason));
+        if (data.user_type == 'user')
+          location.pathname = '/index.html';
         return data;
       })
   }
