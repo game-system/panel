@@ -1,18 +1,28 @@
-//import toastr from "toastr";
+import IziToast from "izitoast";
 import { default as cfg, Config } from "../config";
-import "../../node_modules/toastr/build/toastr.min.css";
+import '../../node_modules/izitoast/dist/css/izitoast.css';
 import "@coreui/icons/css/all.min.css";
 import '../css/tables.css';
 import Handlebars from "handlebars";
 import { Request, User, TableGroup, Table } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui";
+interface GroupType {
+  name: string,
+  type: "SameCardSameRoomMultiBuy" | "SameCardMultiRoomBuy" | "UserBuysFromSingleTable",
+}
+const simdilikGroupTypes: GroupType[] = [
+  { name: 'tr 0', type: "SameCardSameRoomMultiBuy" },
+  { name: 'tr 1', type: "SameCardMultiRoomBuy" },
+  { name: 'tr 2', type: "UserBuysFromSingleTable" }
+];
 
 class TableGroupsAndTables extends Request {
   myData?: User;
   myTableGroups: TableGroup[] = [];
+  groupTypes: GroupType[] = [];
   tableGroupsAndTablesTemplate = fetch(require("../partials/tableGroupsAndTables.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
-  tableTemplate = fetch(require("../partials/addTable.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
+  addTableTemplate = fetch(require("../partials/addTable.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
   editTableGroupTemplate = fetch(require("../partials/editTableGroup.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
   delTableGroupTemplate = fetch(require('../partials/deleteTableGroup.hbs')).then(d => d.text()).then(Handlebars.compile.bind(this));
   editTableTemplate = fetch(require('../partials/edittable.hbs')).then(d => d.text()).then(Handlebars.compile.bind(this));
@@ -25,7 +35,7 @@ class TableGroupsAndTables extends Request {
     this.cfg = c;
     const that = this
     window.addEventListener("DOMContentLoaded", () => {
-      const mdlEl = document.getElementById("actionModal") || undefined
+      const mdlEl = document.getElementById("actionModal") || undefined;
       that.modal = new Modal(mdlEl, {})
       that.modalBody = mdlEl?.querySelector(".modal-dialog") || undefined;
       that.getMyData()
@@ -34,6 +44,8 @@ class TableGroupsAndTables extends Request {
       that.getMyTableGroups()
         .then(d => that.myTableGroups = d)
         .then(() => that.updateTableGroupUI());
+      that.getGroupTypes()
+        .then(d => that.groupTypes = d)
       that.addNewTableGroupUi();
 
     })
@@ -45,35 +57,42 @@ class TableGroupsAndTables extends Request {
       return (e: Event) => {
         e.preventDefault();
         const tableGroupName = (el?.querySelector("input[type='text']") as HTMLInputElement | null);
+        const tableGroupType = (el?.querySelector('#table-type-select') as HTMLInputElement | null);
         const checkbox = (el?.querySelector("input[type='checkbox']") as HTMLInputElement | null);
-        if (!tableGroupName?.value) return tableGroupName?.focus()
+        if (!tableGroupName?.value) return tableGroupName?.focus();
+        if (!tableGroupType?.value) return tableGroupType?.focus();
         if (!checkbox) return
         let _data: TableGroup = {
           id: -1,
           game_id: 1,
           name: tableGroupName.value,
-          group_type: "SameCardSameRoomMultiBuy",
+          //@ts-ignore
+          group_type: tableGroupType.value,
           is_bonus: checkbox.checked,
           seller_id: '_seller1',
           tables: [] as Table[]
         }
-        that.addTableGroup(_data.game_id, _data.name + '', 0, _data.is_bonus)
-          .catch(er => Promise.reject(toastr.error(er, 'HATA')))
+        that.addTableGroup(_data.game_id, _data.name + '', _data.group_type, _data.is_bonus)
+          .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
           .then(({ data, reason, success }) => {
             if (!success)
-              return Promise.reject(toastr.error(reason || '', 'HATA'));
+              return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
             _data.id = data;
             that.myTableGroups.unshift(_data);
             that.updateTableGroupUI();
+            that.modal.hide()
             return true
           })
       }
     }
     btn?.addEventListener("click", () => {
+      const that = this;
+
       fetch(require("../partials/addTableGroup.hbs"))
         .then(d => d.text())
-        .then(d => {
-          that.modalBody && (that.modalBody.innerHTML = d)
+        .then(Handlebars.compile.bind(that))
+        .then(t => {
+          that.modalBody && (that.modalBody.innerHTML = t({ groupTypes: that.groupTypes }))
           const form = that.modalBody?.querySelector("form")
           that.modalBody?.querySelector("#submitNewTableGroup")?.addEventListener("click", handleSubmit(form))
           form?.addEventListener("submit", handleSubmit(form))
@@ -84,8 +103,8 @@ class TableGroupsAndTables extends Request {
   onTableAddClickHandler(id: number) {
     const that = this;
     const tableGroup = this.myTableGroups.filter(tg => tg.id == id)[0];
-    if (!tableGroup) return toastr.error('Böyle bir Masa Grubu bulunamadı', 'HATA');
-    that.tableTemplate.then(t => {
+    if (!tableGroup) return IziToast.error({ title: 'Hata', message: 'Böyle bir masa bulunamadı.' });
+    that.addTableTemplate.then(t => {
       that.modalBody && (that.modalBody.innerHTML = t(tableGroup));
       this.modal.show();
       that.modalBody?.querySelector('#submitNewAddTable')?.addEventListener('click', () => {
@@ -102,13 +121,14 @@ class TableGroupsAndTables extends Request {
           tulum: parseInt(formInputElems[5].value),
         }
         that.addTable(t.group_id, t.name, t.price, t.c1, t.c2, t.t, t.tulum)
-          .catch(er => Promise.reject(toastr.error(er, 'HATA')))
+          .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
           .then(({ data, reason, success }) => {
             if (!success)
-              return Promise.reject(toastr.error(reason || '', 'HATA'));
+              return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
             t.id = data;
             tableGroup.tables.push(t);
             that.updateTableGroupUI();
+            that.modal.hide()
             return
           })
       })
@@ -124,6 +144,7 @@ class TableGroupsAndTables extends Request {
         const name = (that.modalBody?.querySelector('input[type="text"]') as HTMLInputElement).value;
         tableGroup.name = name;
         that.updateTableGroupUI();
+        that.modal.hide()
       })
     })
   }
@@ -135,11 +156,15 @@ class TableGroupsAndTables extends Request {
       this.modal.show();
       this.modalBody?.querySelector('#doDeleteTableGroup')?.addEventListener('click', () => {
         that.deleteTableGroup(id)
-          .catch(er => Promise.reject(toastr.error(er, 'HATA')))
+          .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
           .then(({ data, reason, success }) => {
             if (!success)
-              return Promise.reject(toastr.error(reason || '', 'HATA'));
+              return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+            that.myTableGroups.forEach((e, i) => {
+              if (e.id == id) that.myTableGroups.splice(i, 1);
+            })
             that.updateTableGroupUI();
+            that.modal.hide()
             return
           })
       })
@@ -164,12 +189,12 @@ class TableGroupsAndTables extends Request {
         if (formInputElems[4].value) table.t = parseInt(formInputElems[4].value);
         if (formInputElems[5].value) table.tulum = parseInt(formInputElems[5].value);
         that.updateTable(id, table)
-          .catch(er => Promise.reject(toastr.error(er, 'HATA')))
+          .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
           .then(({ data, reason, success }) => {
             if (!success)
-              return Promise.reject(toastr.error(reason || '', 'HATA'));
-
+              return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
             that.updateTableGroupUI();
+            that.modal.hide()
             return
           })
       })
@@ -183,10 +208,10 @@ class TableGroupsAndTables extends Request {
       this.modal.show();
       this.modalBody?.querySelector('#doDeleteTable')?.addEventListener('click', () => {
         that.deleteTable(id)
-          .catch(er => Promise.reject(toastr.error(er, 'HATA')))
+          .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
           .then(({ data, reason, success }) => {
             if (!success)
-              return Promise.reject(toastr.error(reason || '', 'HATA'));
+              return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
             that.myTableGroups.forEach((tg, index) => {
               if (tg.id == tableGroupID) {
                 tg.tables.forEach((t, i) => {
@@ -196,6 +221,7 @@ class TableGroupsAndTables extends Request {
 
             })
             that.updateTableGroupUI();
+            that.modal.hide()
             return
           })
       })
@@ -219,10 +245,10 @@ class TableGroupsAndTables extends Request {
   }
   async getMyData(): Promise<User> {
     return this.me()
-      .catch(e => Promise.reject(toastr.error("internet sorunu", e)))
+      .catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e })))
       .then(({ success, data, reason }) => {
         if (!success)
-          return Promise.reject(toastr.error("Hata", reason));
+          return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
         if (data.user_type == 'user')
           location.pathname = '/index.html';
         return data;
@@ -230,12 +256,15 @@ class TableGroupsAndTables extends Request {
   }
   async getMyTableGroups(): Promise<TableGroup[]> {
     return this.getGameData(1)
-      .catch(e => Promise.reject(toastr.error('internet sorunu', e)))
+      .catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e })))
       .then(({ success, data, reason }) => {
         if (!success)
-          return Promise.reject(toastr.error(reason + '', 'HATA'))
+          return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
         return data.table_groups;
       })
+  }
+  async getGroupTypes(): Promise<GroupType[]> {
+    return simdilikGroupTypes;
   }
 }
 

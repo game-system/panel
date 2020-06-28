@@ -1,6 +1,6 @@
-import toastr from "toastr";
-import { default as cfg, Config } from "../config"
-import "toastr/build/toastr.min.css";
+import IziToast from "izitoast";
+import { default as cfg, Config } from "../config";
+import '../../node_modules/izitoast/dist/css/izitoast.css';
 import "@coreui/icons/css/all.min.css";
 import '../css/users.css';
 import Handlebars from "handlebars"
@@ -51,13 +51,14 @@ class Users extends Request {
 				that.addChild({ id: id?.value || "", password: pass?.value || "" } as User)
 					.then(({ data, reason, success }) => {
 						if (!success)
-							return Promise.reject(toastr.error("Hata", reason))
+							return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
 						data.date_str = new Date(data.created_at * 1000).toISOString().split("T")[0];
 						that.myChildren.unshift(data)
 						that.updateChildrenUI()
 						return true
 					}).then(() => {
-						toastr.success("İşlem Başarılı")
+
+						IziToast.success({ title: 'Başarılı', message: 'İşlem Başarılı' })
 						that.modal.hide()
 					})
 			}
@@ -88,11 +89,11 @@ class Users extends Request {
 	}
 	onMoneyClickHandler(uid: string) {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
-		if (!user) return toastr.error("Hata", "Geçersiz kullanıcı idsi, Lütfen bizi arayın")
-		this.getWallets(user, this.cfg.gameIds)
-			.catch(() => Promise.reject(toastr.error('Network Hatası', 'HATA')))//TODO: Error Mesajı yaz 
+		if (!user) return IziToast.error({ title: 'Hata', message: 'Geçersiz kullanıcı idsi, Lütfen bizi arayın' })
+		this.getWallets(user, this.cfg.gameData.map(g=> g.id))
+			.catch(() => Promise.reject(IziToast.error({ title: 'Hata', message: 'Network Hatası' })))
 			.then(({ success, reason, data }) => {
-				if (!success) return Promise.reject(toastr.error(reason || '', 'Hata'))
+				if (!success) return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
 				return Promise.all([this.moneyTransferTpl, data])
 			})
 			.then(([t, data]) => {
@@ -107,15 +108,15 @@ class Users extends Request {
 		let credit = parseFloat(elems[0].value);
 
 		this.updateCredit(user, isReceive ? Math.abs(credit) * -1 : credit, gameID, elems[1].checked)
-			.catch(() => Promise.reject(toastr.error('Network Hatası', 'HATA')))
+			.catch(() => Promise.reject(IziToast.error({ title: 'Hata', message: 'İşlem başarısız' })))
 			.then(({ success, reason, data }) => {
-				if (!success) return Promise.reject(toastr.error(reason || '', 'HATA'));
+				if (!success) return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
 				console.log(data);
 			})
 	}
 	onUserEditClickHandler(uid: string) {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
-		if (!user) return toastr.error("Hata", "Geçersiz kullanıcı idsi, Lütfen bizi arayın")
+		if (!user) return IziToast.error({ title: "Hata", message: "Geçersiz kullanıcı idsi, Lütfen bizi arayın" })
 		this.editUserTpl.then((t) => {
 			this.modalBody && (this.modalBody.innerHTML = t(user))
 			this.modal.show()
@@ -130,10 +131,10 @@ class Users extends Request {
 				if (userInfoElems[1]?.value) userInfo.phone = userInfoElems[1].value;
 				if (userInfoElems[2]?.value) userInfo.password = userInfoElems[2].value;
 				this.updateProfile(user, userInfo)
-					.catch(() => Promise.reject(toastr.error('İşlem gerçekleşmedi', 'Hata')))
+					.catch(() => Promise.reject(IziToast.error({ title: 'Hata', message: 'İşlem başarısız' })))
 					.then(({ success, reason }) => {
-						if (!success) return Promise.reject(toastr.error(reason || '', 'Hata'));
-						return toastr.success('İşlem başarıyla gerçekleşti', 'başarılı');
+						if (!success) return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+						return IziToast.success({ title: 'Başarılı', message: 'İşlem başarıyla gerçekleşti' })
 					})
 			}
 		})
@@ -142,7 +143,7 @@ class Users extends Request {
 
 	onUserDeleteClickHandler(uid: string) {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
-		if (!user) return toastr.error("Hata", "Geçersiz kullanıcı idsi, Lütfen bizi arayın")
+		if (!user) return IziToast.error({ title: "Hata", message: "Geçersiz kullanıcı idsi, Lütfen bizi arayın" })
 		this.userDeleteTpl.then((t) => {
 			this.modalBody && (this.modalBody.innerHTML = t(user))
 			this.modal.show()
@@ -152,8 +153,8 @@ class Users extends Request {
 				this.deleteChild(user, true)
 					.then(({ success, reason }) => {
 						if (!success)
-							return toastr.error("HATA", reason + '')
-						toastr.success("Silindi")
+							return IziToast.error({ title: 'Hata', message: reason })
+						IziToast.success({ title: 'Başarılı', message: 'Silindi' })
 						this.myChildren = this.myChildren.filter(u => u.id != uid)
 						this.updateChildrenUI()
 						this.modal.hide()
@@ -164,8 +165,8 @@ class Users extends Request {
 				this.enableChild(user, true)
 					.then(({ success, reason }) => {
 						if (!success)
-							return toastr.error("HATA", reason + '')
-						toastr.success("Başarı")
+							return IziToast.error({ title: 'Hata', message: reason })
+						IziToast.success({ title: 'Başarılı', message: 'Engel Kaldırıldı' });
 						this.myChildren.forEach(u => {
 							u.id == uid && (u.is_disabled = false)
 						})
@@ -178,8 +179,8 @@ class Users extends Request {
 				this.disableChild(user, true)
 					.then(({ success, reason }) => {
 						if (!success)
-							return toastr.error("HATA", reason + '')
-						toastr.success("Engellendi")
+							return IziToast.error({ title: 'Hata', message: reason })
+						IziToast.success({ title: 'Başarılı', message: 'Engellendi' });
 						this.myChildren.forEach(u => {
 							u.id == uid && (u.is_disabled = true)
 						})
@@ -198,19 +199,21 @@ class Users extends Request {
 	}
 	async getMyData(): Promise<User> {
 		return this.me()
-			.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
+			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: 'internet sorunu' + e })))
 			.then(({ success, data, reason }) => {
 				if (!success)
-					return Promise.reject(toastr.error("Hata", reason));
+					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+				if (data.user_type == 'user')
+					location.pathname = '/index.html';
 				return data;
 			})
 	}
 	async getMyChildren(): Promise<User[]> {
 		return this.children()
-			.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
+			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: 'internet sorunu' + e })))
 			.then(({ success, data, reason }) => {
 				if (!success)
-					return Promise.reject(toastr.error("Hata", reason));
+					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
 				return data;
 			})
 	}

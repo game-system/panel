@@ -10,6 +10,12 @@
 			<div class="form-group">
 				<label for="addNewUserId">Masa Grubu Adı:</label>
 				<input id="addNewUserId" class="form-control" placeholder="Masa Grubu Adı" type="text">
+				<select id="table-type-select">
+					<option value="">--Masa Tipi Seçin--</option>
+					{{#each groupTypes}}
+					<option value='{{type}}'>{{name}}</option>
+					{{/each}}
+				</select>
 				<div>
 					<input type='checkbox' />
 					<label for="checkbox">Bonus Grup</label>
