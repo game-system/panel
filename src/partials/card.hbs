@@ -2,15 +2,13 @@
 {{#lockCard @root.numLockCards .}}
 <button type="button" class="btn btn-primary d-flex justify-content-between align-items-center"
   style='width:60px;height:60px;border-radius:5px;padding:10px;margin-left:10px;margin-bottom:10px;'
-  onclick='ctx.onUnlockCard(1,{{.}})'
-  >
+  onclick='ctx.onUnlockCard({{@root.tgID}},{{.}})'>
   Kilit Aç: {{.}}
 </button>
 {{else}}
 <button type="button" class="btn btn-secondary d-flex justify-content-between align-items-center"
   style='width:60px;height:60px;border-radius:5px;padding:10px;margin-left:10px;margin-bottom:10px;'
-    onclick='ctx.onLockCard(1,{{.}})'
-  >
+  onclick='ctx.onLockCard({{@root.tgID}},{{.}})'>
   Kilitle: {{.}}
 </button>
 {{/lockCard}}
