@@ -1,6 +1,6 @@
 import IziToast from "izitoast";
 import { default as cfg, Config } from "../config";
-import '../../node_modules/izitoast/dist/css/izitoast.css';
+import 'izitoast/dist/css/iziToast.min.css';
 import "@coreui/icons/css/all.min.css";
 import '../css/users.css';
 import Handlebars from "handlebars"

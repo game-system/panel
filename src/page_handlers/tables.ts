@@ -1,6 +1,6 @@
 import IziToast from "izitoast";
 import { default as cfg, Config } from "../config";
-import '../../node_modules/izitoast/dist/css/izitoast.css';
+import 'izitoast/dist/css/iziToast.css';
 import "@coreui/icons/css/all.min.css";
 import '../css/tables.css';
 import Handlebars from "handlebars";
@@ -25,7 +25,7 @@ class TableGroupsAndTables extends Request {
   addTableTemplate = fetch(require("../partials/addTable.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
   editTableGroupTemplate = fetch(require("../partials/editTableGroup.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
   delTableGroupTemplate = fetch(require('../partials/deleteTableGroup.hbs')).then(d => d.text()).then(Handlebars.compile.bind(this));
-  editTableTemplate = fetch(require('../partials/edittable.hbs')).then(d => d.text()).then(Handlebars.compile.bind(this));
+  editTableTemplate = fetch(require('../partials/editTable.hbs')).then(d => d.text()).then(Handlebars.compile.bind(this));
   delTableTemplate = fetch(require('../partials/deleteTable.hbs')).then(d => d.text()).then(Handlebars.compile.bind(this));
   modal: any;
   modalBody?: HTMLElement;
