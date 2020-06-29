@@ -1,9 +1,10 @@
-import toastr from "toastr";
-import cfg from "../config"
-import "toastr/build/toastr.min.css";
-import "@coreui/icons/css/all.min.css"
+import IziToast from "izitoast";
+import { default as cfg, Config } from "../config";
+import '../../node_modules/izitoast/dist/css/izitoast.css';
+import "@coreui/icons/css/all.min.css";
+import '../css/users.css';
 import Handlebars from "handlebars"
-import { Config, Request, User } from "tombalaApi"
+import { Request, User } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui"
 
@@ -12,11 +13,14 @@ class Users extends Request {
 	myChildren: User[] = [];
 	usersTemplate = fetch(require("../partials/usersTable.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
 	userDeleteTpl = fetch(require("../partials/deleteUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
-	userEditTpl = fetch(require("../partials/editUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
+	moneyTransferTpl = fetch(require("../partials/moneyTransfer.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
+	editUserTpl = fetch(require("../partials/editUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
 	modal: any;
 	modalBody?: HTMLElement;
+	cfg: Config = {} as Config;
 	constructor(c: Config) {
 		super(c)
+		this.cfg = c;
 		const that = this
 		window.addEventListener("DOMContentLoaded", () => {
 			const mdlEl = document.getElementById("actionModal") || undefined
@@ -47,13 +51,14 @@ class Users extends Request {
 				that.addChild({ id: id?.value || "", password: pass?.value || "" } as User)
 					.then(({ data, reason, success }) => {
 						if (!success)
-							return Promise.reject(toastr.error("Hata", reason))
+							return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
 						data.date_str = new Date(data.created_at * 1000).toISOString().split("T")[0];
 						that.myChildren.unshift(data)
 						that.updateChildrenUI()
 						return true
 					}).then(() => {
-						toastr.success("İşlem Başarılı")
+
+						IziToast.success({ title: 'Başarılı', message: 'İşlem Başarılı' })
 						that.modal.hide()
 					})
 			}
@@ -83,18 +88,62 @@ class Users extends Request {
 		})
 	}
 	onMoneyClickHandler(uid: string) {
-		console.log(uid)
+		const user = this.myChildren.filter(usr => usr.id == uid)[0];
+		if (!user) return IziToast.error({ title: 'Hata', message: 'Geçersiz kullanıcı idsi, Lütfen bizi arayın' })
+		this.getWallets(user, this.cfg.gameData.map(g=> g.id))
+			.catch(() => Promise.reject(IziToast.error({ title: 'Hata', message: 'Network Hatası' })))
+			.then(({ success, reason, data }) => {
+				if (!success) return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
+				return Promise.all([this.moneyTransferTpl, data])
+			})
+			.then(([t, data]) => {
+				this.modalBody && (this.modalBody.innerHTML = t({ uid, data }))
+				this.modal.show();
+			})
+	}
+	updtCredit(uid: string, gameID: number, isReceive: boolean) {
+		const user = this.myChildren.filter(usr => usr.id == uid)[0];
+		const elems = [].slice.call(document.querySelector('#form_' + gameID)?.querySelectorAll('input')) as HTMLInputElement[];
+		if (!elems) return;
+		let credit = parseFloat(elems[0].value);
+
+		this.updateCredit(user, isReceive ? Math.abs(credit) * -1 : credit, gameID, elems[1].checked)
+			.catch(() => Promise.reject(IziToast.error({ title: 'Hata', message: 'İşlem başarısız' })))
+			.then(({ success, reason, data }) => {
+				if (!success) return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+				console.log(data);
+			})
 	}
 	onUserEditClickHandler(uid: string) {
-		const user = this.myChildren.filter(u => u.id == uid);
-		if (!user) return
-		this.userEditTpl.then(t => t(user))
-			.then()
-
+		const user = this.myChildren.filter(usr => usr.id == uid)[0];
+		if (!user) return IziToast.error({ title: "Hata", message: "Geçersiz kullanıcı idsi, Lütfen bizi arayın" })
+		this.editUserTpl.then((t) => {
+			this.modalBody && (this.modalBody.innerHTML = t(user))
+			this.modal.show()
+			return this.modalBody?.querySelector("#saveUserData") as HTMLElement | undefined
+		}).then(el => {
+			if (!el) return
+			let userInfo: { email: string, phone: string, password: string } = {} as { email: string, phone: string, password: string }
+			el.onclick = () => {
+				const userInfoElems = this.modalBody?.querySelectorAll('.form-control') as HTMLInputElement[] | undefined;
+				if (!userInfoElems) return;
+				if (userInfoElems[0]?.value) userInfo.email = userInfoElems[0].value;
+				if (userInfoElems[1]?.value) userInfo.phone = userInfoElems[1].value;
+				if (userInfoElems[2]?.value) userInfo.password = userInfoElems[2].value;
+				this.updateProfile(user, userInfo)
+					.catch(() => Promise.reject(IziToast.error({ title: 'Hata', message: 'İşlem başarısız' })))
+					.then(({ success, reason }) => {
+						if (!success) return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+						return IziToast.success({ title: 'Başarılı', message: 'İşlem başarıyla gerçekleşti' })
+					})
+			}
+		})
+		return null
 	}
+
 	onUserDeleteClickHandler(uid: string) {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
-		if (!user) return toastr.error("Hata", "Geçersiz kullanıcı idsi, Lütfen bizi arayın")
+		if (!user) return IziToast.error({ title: "Hata", message: "Geçersiz kullanıcı idsi, Lütfen bizi arayın" })
 		this.userDeleteTpl.then((t) => {
 			this.modalBody && (this.modalBody.innerHTML = t(user))
 			this.modal.show()
@@ -104,8 +153,8 @@ class Users extends Request {
 				this.deleteChild(user, true)
 					.then(({ success, reason }) => {
 						if (!success)
-							return toastr.error("HATA", reason + '')
-						toastr.success("Silindi")
+							return IziToast.error({ title: 'Hata', message: reason })
+						IziToast.success({ title: 'Başarılı', message: 'Silindi' })
 						this.myChildren = this.myChildren.filter(u => u.id != uid)
 						this.updateChildrenUI()
 						this.modal.hide()
@@ -116,8 +165,8 @@ class Users extends Request {
 				this.enableChild(user, true)
 					.then(({ success, reason }) => {
 						if (!success)
-							return toastr.error("HATA", reason + '')
-						toastr.success("Başarı")
+							return IziToast.error({ title: 'Hata', message: reason })
+						IziToast.success({ title: 'Başarılı', message: 'Engel Kaldırıldı' });
 						this.myChildren.forEach(u => {
 							u.id == uid && (u.is_disabled = false)
 						})
@@ -130,8 +179,8 @@ class Users extends Request {
 				this.disableChild(user, true)
 					.then(({ success, reason }) => {
 						if (!success)
-							return toastr.error("HATA", reason + '')
-						toastr.success("Engellendi")
+							return IziToast.error({ title: 'Hata', message: reason })
+						IziToast.success({ title: 'Başarılı', message: 'Engellendi' });
 						this.myChildren.forEach(u => {
 							u.id == uid && (u.is_disabled = true)
 						})
@@ -150,19 +199,21 @@ class Users extends Request {
 	}
 	async getMyData(): Promise<User> {
 		return this.me()
-			.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
+			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: 'internet sorunu' + e })))
 			.then(({ success, data, reason }) => {
 				if (!success)
-					return Promise.reject(toastr.error("Hata", reason));
+					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+				if (data.user_type == 'user')
+					location.pathname = '/index.html';
 				return data;
 			})
 	}
 	async getMyChildren(): Promise<User[]> {
 		return this.children()
-			.catch(e => Promise.reject(toastr.error("internet sorunu", e)))
+			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: 'internet sorunu' + e })))
 			.then(({ success, data, reason }) => {
 				if (!success)
-					return Promise.reject(toastr.error("Hata", reason));
+					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
 				return data;
 			})
 	}

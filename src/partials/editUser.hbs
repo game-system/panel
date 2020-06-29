@@ -1,19 +1,17 @@
 <div class="modal-content">
-	<div class="modal-header">
-		<h5 class="modal-title">Sil veya Engelle:	{{id}}</h5>
-		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			<span aria-hidden="true">&times;</span>
-		</button>
-	</div>
-	<div class="modal-body">
-		{{#if is_disabled}}
-			<div id="doEnableUser" class="btn btn-success btn-block"> Engeli Kaldır </div>
-		{{else}}
-			<div id="doDisableUser" class="btn btn-danger btn-block"> Engelle </div>
-		{{/if}}
-		<div id="doDeleteUser" class="btn btn-outline-danger btn-block">Sil</div>
-	</div>
-	<div class="modal-footer">
-		<button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
-	</div>
+  <div class="modal-header">
+    <h5 class="modal-title">Düzenle: {{id}}</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+     <input type="email" class="form-control" placeholder="{{#if email}} {{email}}{{else}}email{{/if}}"></br>
+     <input type="number" class="form-control" placeholder="{{#if phone}} {{phone}}{{else}}telefon{{/if}}"></br>
+     <input type="password" class="form-control" placeholder="password"></br>
+    <button id='saveUserData' type="button" class="btn btn-primary" data-dismiss="modal">Kaydet</button>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+  </div>
 </div>

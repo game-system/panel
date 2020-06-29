@@ -37,7 +37,7 @@
     <!-- Main styles for this application-->
     <link href="scss/style.scss" rel="stylesheet" />
     <link href="../node_modules/@coreui/chartjs/dist/css/coreui-chartjs.css" rel="stylesheet" />
-    <script src="./page_handlers/users.ts"></script>
+    <script src="./page_handlers/tables.ts"></script>
 </head>
 
 <body class="c-app">
@@ -50,7 +50,8 @@
     <div class="c-wrapper ">
         <header class="c-header c-header-light ">
             <button class="c-header-toggler c-class-toggler d-lg-none mfe-auto" type="button" data-target="#sidebar" data-class="c-sidebar-show">
-          <svg class="c-icon c-icon-lg"
+          <svg 
+          class="c-icon c-icon-lg"
           xmlns:xlink="http://www.w3.org/1999/xlink"
           >
             <use
@@ -58,12 +59,10 @@
             ></use>
           </svg></button
         ><a class="c-header-brand d-lg-none" href="#">
-          <svg 
-          width="118" height="46" alt="CoreUI Logo"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
-          >
+          <svg width="118" height="46" alt="CoreUI Logo"
+          xmlns:xlink="http://www.w3.org/1999/xlink">
             <use xlink:href="assets/brand/coreui.svg#full"></use></svg>
-        </a>
+          </a>
         <button
           class="c-header-toggler c-class-toggler mfs-3 d-md-down-none"
           type="button"
@@ -83,18 +82,9 @@
             <main class="c-main">
                 <div class="container-fluid">
                     <div class="fade-in">
-                        <button class="btn btn-primary" id="new_user_btn"><span class="cil-medical-cross btn-icon mr-2"></span>Yeni Kullanıcı</button>
-                        <table class="table table-stripped">
-                            <thead>
-                                <tr>
-                                    <th>İd</th>
-                                    <th>Oluşturma Tarihi</th>
-                                    <th>Engelli</th>
-                                    <th>İşlemler</th>
-                                </tr>
-                            </thead>
-                            <tbody id="users_table"></tbody>
-                        </table>
+                        <button class="btn btn-primary" id="new_table_group_btn"><span class="cil-medical-cross btn-icon mr-2"></span>Yeni Masa Grubu Ekle</button>
+                        <div class="accordion" id="accordion-table-groups-and-tables"></div>
+
                     </div>
                 </div>
             </main>

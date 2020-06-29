@@ -1,0 +1,41 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title">{{name}} Grubuna Masa Ekle</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form id="addUserForm">
+      <div class="form-group">
+        <label>Masa Adı:</label>
+        <input class="form-control" placeholder="Masa Adı" type="text">
+      </div>
+      <div class="form-group">
+        <label>Kart Fiyatı:</label>
+        <input class="form-control" placeholder="Kart Fiyatı" type="number">
+      </div>
+      <div class="form-group">
+        <label>Birinci Çinko Ödülü:</label>
+        <input class="form-control" placeholder="Birinci Çinko Ödülü" type="number">
+      </div>
+      <div class="form-group">
+        <label>İkinci Çinko Ödülü:</label>
+        <input class="form-control" placeholder="İkinci Çinko Ödülü" type="number">
+      </div>
+      <div class="form-group">
+        <label>Tombala Ödülü:</label>
+        <input class="form-control" placeholder="Tombala Ödülü" type="number">
+      </div>
+      <div class="form-group">
+        <label>Tulum Ödülü:</label>
+        <input class="form-control" placeholder="Tulum Ödülü" type="number">
+      </div>
+      <input class="d-none" type="submit">
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+    <button type="button" class="btn btn-primary" id="submitNewAddTable">Ekle</button>
+  </div>
+</div>
