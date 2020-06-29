@@ -55,8 +55,9 @@ class Users extends Request {
 	}
 	updateCardData(id: number) {
 		const that = this;
-		that.getCardData(id)
+		that.getLockedCards(id)
 			.catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
+			//@ts-ignore
 			.then(({ success, reason, data }) => {
 				if (!success)
 					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
@@ -83,8 +84,14 @@ class Users extends Request {
 	}
 	updateCardUI(tgID: number) {
 		const that = this;
-		this.cardTemplate
-			.then(t => t({ tgID, numLockCards: that.lockCardData, numCards: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20] }))
+		that.getGameCards(1)
+			.catch(e => Promise.reject(IziToast.error({ title: 'İnternet Hatası', message: e })))
+			.then(({ success, reason, data }) => {
+				if (!success) Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
+				console.log(data);
+				return Promise.all([that.cardTemplate, data]);
+			})
+			.then(([t, data]) => t({ tgID, numLockCards: that.lockCardData, Cards: data }))
 			.then(tpl => that.con && (that.con.innerHTML = tpl));
 	}
 	updateUiMydata() {
@@ -96,6 +103,7 @@ class Users extends Request {
 		const that = this;
 		this.lockCard(tgID, cardID)
 			.catch(er => IziToast.error({ title: 'Hata', message: er }))
+			//@ts-ignore
 			.then(({ success, reason, data }) => {
 				if (!success)
 					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
@@ -108,6 +116,7 @@ class Users extends Request {
 		const that = this;
 		this.unLockCard(tgID, cardID)
 			.catch(er => IziToast.error({ title: 'Hata', message: er }))
+			//@ts-ignore
 			.then(({ success, reason, data }) => {
 				if (!success)
 					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
@@ -141,4 +150,3 @@ cfg().then(c =>
 	//@ts-ignore
 	window.ctx = new Users(c)
 )
-
