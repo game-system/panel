@@ -39,7 +39,10 @@ class TableGroupsAndTables extends Request {
       that.modal = new Modal(mdlEl, {})
       that.modalBody = mdlEl?.querySelector(".modal-dialog") || undefined;
       that.getMyData()
-        .then(d => that.myData = d)
+      .then(d => {
+        if (d.user_type != 'seller') Promise.reject(location.pathname = '/users.html');
+        return Promise.resolve(that.myData = d)
+      })
         .then(() => that.updateUiMydata());
       that.getMyTableGroups()
         .then(d => that.myTableGroups = d)

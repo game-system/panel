@@ -46,7 +46,10 @@ class Users extends Request {
 			that.modalBody = mdlEl?.querySelector(".modal-dialog") || undefined;
 			that.con = document.querySelector('#con');
 			that.getMyData()
-				.then(d => that.myData = d)
+				.then(d => {
+					if (d.user_type != 'seller') Promise.reject(location.pathname = '/users.html');
+					return Promise.resolve(that.myData = d)
+				})
 				.then(() => that.updateUiMydata());
 
 			that.getMyTableGroups().then(a => that.updateTGUI())
