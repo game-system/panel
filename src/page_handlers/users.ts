@@ -6,9 +6,7 @@ import '../css/users.css';
 import Handlebars from "handlebars"
 import { Request, User, Wallet } from "tombalaApi";
 //@ts-ignore
-import { Modal } from "@coreui/coreui"
-import { DH_UNABLE_TO_CHECK_GENERATOR } from "constants";
-import { success } from "toastr";
+import { Modal } from "@coreui/coreui";
 
 class Users extends Request {
 	myData?: User;
