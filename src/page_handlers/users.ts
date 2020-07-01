@@ -1,5 +1,5 @@
 import IziToast from "izitoast";
-import { default as cfg, Config } from "../config";
+import { default as cfg, Config } from "./config";
 import 'izitoast/dist/css/iziToast.min.css';
 import "@coreui/icons/css/all.min.css";
 import '../css/users.css';
@@ -10,10 +10,11 @@ import { Modal } from "@coreui/coreui";
 
 class Users extends Request {
 	myData?: User;
-	wallet: Wallet = {} as Wallet;
+	wallets: Wallet[] = [];
 	myChildren: User[] = [];
 	usersTemplate = fetch(require("../partials/usersTable.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
-	userDeleteTpl = fetch(require("../partials/deleteUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
+	userDeleteTpl = fetch(require("../partials/deleteUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
+	creditTemplate = fetch(require("../partials/credit.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
 	moneyTransferTpl = fetch(require("../partials/moneyTransfer.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
 	editUserTpl = fetch(require("../partials/editUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
 	modal: any;
@@ -42,11 +43,16 @@ class Users extends Request {
 	}
 	initWallet() {
 		const that = this;
-		that.getGameData(1)
-			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e })))
-			.then(({ data, reason, success }) => {
-				if (!success) return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
-				that.wallet = data.wallet;
+		cfg()
+			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e + '' })))
+			.then(d => Promise.all(d.gameData.map(e => that.getGameData(e.id))))
+			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e + '' })))
+			.then(data => {
+				data.forEach(d => {
+					if (d.success) {
+						that.wallets.push(d.data.wallet);
+					}
+				});
 				that.updateUserCreditUI();
 			})
 	}
@@ -89,8 +95,10 @@ class Users extends Request {
 
 	}
 	updateUserCreditUI() {
-		const el: HTMLElement | null = document.querySelector('#kredi') || null;
-		el && (el.innerText = `Kredi: ${this.wallet.balance} Bonus Kredi: ${this.wallet.bonus_balance}`);
+		const el: HTMLElement | null = document.querySelector('#credits') || null;
+		this.creditTemplate
+			.then(t => t({ wallets: this.wallets }))
+			.then(html => el && (el.innerHTML = html))
 	}
 	updateChildrenUI() {
 		const that = this;
@@ -121,22 +129,17 @@ class Users extends Request {
 		const that = this;
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
 		const elems = [].slice.call(document.querySelector('#form_' + gameID)?.querySelectorAll('input')) as HTMLInputElement[];
-		if (!elems) return;
+		if (!elems || !elems.length || elems.length < 2) return;
 		let credit = parseFloat(elems[0].value);
 
 		this.updateCredit(user, isReceive ? Math.abs(credit) * -1 : credit, gameID, elems[1].checked)
 			.catch(() => Promise.reject(IziToast.error({ title: 'Hata', message: 'İşlem başarısız' })))
 			.then(({ success, reason, data }) => {
 				if (!success) return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
-				if (elems[1].checked) {
-					that.wallet.bonus_balance -= isReceive ? Math.abs(credit) * -1 : credit;
-					that.updateUserCreditUI();
-					return
-				}
-				else {
-					that.wallet.balance -= (isReceive ? Math.abs(credit) * -1 : credit);
-					that.updateUserCreditUI();
-				}
+				const index = that.wallets.reduce((stt, curr, i) => (curr.game_id == gameID) ? i : stt, -1);
+				if (index === -1) return;
+				that.wallets[index][elems[1].checked ? 'bonus_balance' : 'balance'] -= isReceive ? Math.abs(credit) * -1 : credit;
+				that.updateUserCreditUI();
 			})
 	}
 	onUserEditClickHandler(uid: string) {
