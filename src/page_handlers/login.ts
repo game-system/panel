@@ -1,5 +1,5 @@
 import swal from "sweetalert2";
-import cfg from "../config"
+import cfg from "./config"
 import { Config, Request } from "tombalaApi";
 export default class Login extends Request {
 	private loginEl = document.querySelector("#username") as HTMLInputElement;
@@ -36,6 +36,7 @@ export default class Login extends Request {
 							if (data.user_type == 'user') {
 								return swal.fire('Giriş Başarısız', 'Bu sayfaya giriş yetkiniz yok', 'info');
 							}
+							sessionStorage.setItem('user_type', data.user_type + '');
 							swal.fire("Giriş Başarılı", "", "success")
 							setTimeout(() => { location.pathname = "users.html" }, 1000)
 						})

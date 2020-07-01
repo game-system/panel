@@ -1,5 +1,5 @@
 import IziToast from "izitoast";
-import { default as cfg, Config } from "../config";
+import { default as cfg, Config } from "./config";
 import 'izitoast/dist/css/iziToast.css';
 import "@coreui/icons/css/all.min.css";
 import '../css/tables.css';
