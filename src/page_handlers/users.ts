@@ -4,12 +4,15 @@ import 'izitoast/dist/css/iziToast.min.css';
 import "@coreui/icons/css/all.min.css";
 import '../css/users.css';
 import Handlebars from "handlebars"
-import { Request, User } from "tombalaApi";
+import { Request, User, Wallet } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui"
+import { DH_UNABLE_TO_CHECK_GENERATOR } from "constants";
+import { success } from "toastr";
 
 class Users extends Request {
 	myData?: User;
+	wallet: Wallet = {} as Wallet;
 	myChildren: User[] = [];
 	usersTemplate = fetch(require("../partials/usersTable.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
 	userDeleteTpl = fetch(require("../partials/deleteUser.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this))
@@ -36,7 +39,18 @@ class Users extends Request {
 				}))
 				.then(that.updateChildrenUI.bind(that))
 			that.addNewUserUi()
+			that.initWallet();
 		})
+	}
+	initWallet() {
+		const that = this;
+		that.getGameData(1)
+			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e })))
+			.then(({ data, reason, success }) => {
+				if (!success) return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
+				that.wallet = data.wallet;
+				that.updateUserCreditUI();
+			})
 	}
 	addNewUserUi() {
 		const that = this;
@@ -76,6 +90,10 @@ class Users extends Request {
 		})
 
 	}
+	updateUserCreditUI() {
+		const el: HTMLElement | null = document.querySelector('#kredi') || null;
+		el && (el.innerText = `Kredi: ${this.wallet.balance} Bonus Kredi: ${this.wallet.bonus_balance}`);
+	}
 	updateChildrenUI() {
 		const that = this;
 		const el = document.querySelector("#users_table")
@@ -90,7 +108,7 @@ class Users extends Request {
 	onMoneyClickHandler(uid: string) {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
 		if (!user) return IziToast.error({ title: 'Hata', message: 'Geçersiz kullanıcı idsi, Lütfen bizi arayın' })
-		this.getWallets(user, this.cfg.gameData.map(g=> g.id))
+		this.getWallets(user, this.cfg.gameData.map(g => g.id))
 			.catch(() => Promise.reject(IziToast.error({ title: 'Hata', message: 'Network Hatası' })))
 			.then(({ success, reason, data }) => {
 				if (!success) return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
@@ -102,6 +120,7 @@ class Users extends Request {
 			})
 	}
 	updtCredit(uid: string, gameID: number, isReceive: boolean) {
+		const that = this;
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
 		const elems = [].slice.call(document.querySelector('#form_' + gameID)?.querySelectorAll('input')) as HTMLInputElement[];
 		if (!elems) return;
@@ -111,7 +130,15 @@ class Users extends Request {
 			.catch(() => Promise.reject(IziToast.error({ title: 'Hata', message: 'İşlem başarısız' })))
 			.then(({ success, reason, data }) => {
 				if (!success) return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
-				console.log(data);
+				if (elems[1].checked) {
+					that.wallet.bonus_balance -= isReceive ? Math.abs(credit) * -1 : credit;
+					that.updateUserCreditUI();
+					return
+				}
+				else {
+					that.wallet.balance -= (isReceive ? Math.abs(credit) * -1 : credit);
+					that.updateUserCreditUI();
+				}
 			})
 	}
 	onUserEditClickHandler(uid: string) {
