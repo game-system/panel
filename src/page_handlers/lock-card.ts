@@ -41,7 +41,7 @@ class Users extends Request {
 		this.cfg = c;
 		const that = this
 		window.addEventListener("DOMContentLoaded", () => {
-			const mdlEl = document.getElementById("actionModal") || undefined
+			const mdlEl = document.getElementById("actionModal") || undefined;
 			that.modal = new Modal(mdlEl, {})
 			that.modalBody = mdlEl?.querySelector(".modal-dialog") || undefined;
 			that.con = document.querySelector('#con');
