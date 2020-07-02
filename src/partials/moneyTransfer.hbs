@@ -8,9 +8,9 @@
   {{#each data}}
   <div class="modal-body">
     <div class='count-status'>
-      <span>kredi: {{balance}}</span>
-      <span>bonus kredi: {{bonus_balance}}</span>
-      <span>oyun adı: {{game_name}}</span>
+      <span>kredi: <p class='font-weight-bold'>{{balance}}</p></span>
+      <span>bonus kredi: <p class='font-weight-bold'>{{bonus_balance}}</p></span>
+      <span>oyun adı: <p class='font-weight-bold'>{{game_name}}</p></span>
     </div>
     <form id='form_{{game_id}}'>
       <div class="input-group mb-3">
@@ -19,15 +19,18 @@
         </div>
         <input type="number" class="form-control">
       </div>
-      <div>
-        <input type="checkbox" /><label>Bonus Kredi</label>
+      <div class='d-flex flex-row justify-content-start'>
+        <div class='d-flex flex-row justify-content-start align-items-center'>
+          <input type="checkbox" /><label style='width:120px;margin:0;'>Bonus Kredi</label>
+        </div>
+        <div class='button-area'>
+          <button id='pushMoney' type="submit" onclick='ctx.updtCredit("{{@root.uid}}",{{game_id}},false)'
+            class="btn btn-primary" data-dismiss="modal">Gönder</button>
+          <button id='pullMoney' type="button" onclick='ctx.updtCredit("{{@root.uid}}",{{game_id}},true)'
+            class="btn btn-light" data-dismiss="modal">Çek</button>
+        </div>
       </div>
-      <div class='button-area'>
-        <button id='pushMoney' type="submit" onclick='ctx.updtCredit("{{@root.uid}}",{{game_id}},false)'
-          class="btn btn-primary" data-dismiss="modal">Gönder</button>
-        <button id='pullMoney' type="button" onclick='ctx.updtCredit("{{@root.uid}}",{{game_id}},true)'
-          class="btn btn-light" data-dismiss="modal">Çek</button>
-      </div>
+
 
     </form>
   </div>
