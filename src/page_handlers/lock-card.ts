@@ -3,7 +3,7 @@ import { default as cfg, Config } from "./config";
 import 'izitoast/dist/css/iziToast.min.css';
 import "@coreui/icons/css/all.min.css";
 import Handlebars from "handlebars"
-import { Request, User, TableGroup, } from "tombalaApi";
+import { Request, User, TableGroup, Wallet } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui"
 
@@ -26,9 +26,11 @@ Handlebars.registerHelper('lockCard', function (numLockCards: number[], numCards
 
 class Users extends Request {
 	myData?: User;
+	wallets: Wallet[] = [];
 	lockCardData: number[] = [];
 	breadCrumbs: BreadCrumb[] = [];
 	tableGroups: TableGroup[] = [];
+	creditTemplate = fetch(require("../partials/credit.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
 	cardTemplate = fetch(require("../partials/card.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
 	tgforLockTemplate = fetch(require("../partials/tablegroupforlock.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
 	breadCrumbTemplate = fetch(require("../partials/breadcrumb.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
@@ -52,9 +54,25 @@ class Users extends Request {
 				})
 				.then(() => that.updateUiMydata());
 
-			that.getMyTableGroups().then(a => that.updateTGUI())
-			that.updateBreadCrumbUI()
+			that.getMyTableGroups().then(a => that.updateTGUI());
+			that.updateBreadCrumbUI();
+			that.initWallet();
 		})
+	}
+		initWallet() {
+		const that = this;
+		cfg()
+			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e + '' })))
+			.then(d => Promise.all(d.gameData.map(e => that.getGameData(e.id))))
+			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e + '' })))
+			.then(data => {
+				data.forEach(d => {
+					if (d.success) {
+						that.wallets.push(d.data.wallet);
+					}
+				});
+				that.updateUserCreditUI();
+			})
 	}
 	updateCardData(id: number) {
 		const that = this;
@@ -70,6 +88,13 @@ class Users extends Request {
 				that.updateBreadCrumbUI();
 				return that.updateCardUI(id);
 			})
+	}
+
+	updateUserCreditUI() {
+		const el: HTMLElement | null = document.querySelector('#credits') || null;
+		this.creditTemplate
+			.then(t => t({ wallets: this.wallets }))
+			.then(html => el && (el.innerHTML = html))
 	}
 	updateTGUI() {
 		const that = this;

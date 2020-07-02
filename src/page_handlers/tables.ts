@@ -4,7 +4,7 @@ import 'izitoast/dist/css/iziToast.css';
 import "@coreui/icons/css/all.min.css";
 import '../css/tables.css';
 import Handlebars from "handlebars";
-import { Request, User, TableGroup, Table } from "tombalaApi";
+import { Request, User, TableGroup, Table, Wallet } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui";
 interface GroupType {
@@ -19,8 +19,10 @@ const simdilikGroupTypes: GroupType[] = [
 
 class TableGroupsAndTables extends Request {
   myData?: User;
+  wallets: Wallet[] = [];
   myTableGroups: TableGroup[] = [];
   groupTypes: GroupType[] = [];
+  creditTemplate = fetch(require("../partials/credit.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
   tableGroupsAndTablesTemplate = fetch(require("../partials/tableGroupsAndTables.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
   addTableTemplate = fetch(require("../partials/addTable.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
   editTableGroupTemplate = fetch(require("../partials/editTableGroup.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
@@ -39,10 +41,10 @@ class TableGroupsAndTables extends Request {
       that.modal = new Modal(mdlEl, {})
       that.modalBody = mdlEl?.querySelector(".modal-dialog") || undefined;
       that.getMyData()
-      .then(d => {
-        if (d.user_type != 'seller') Promise.reject(location.pathname = '/users.html');
-        return Promise.resolve(that.myData = d)
-      })
+        .then(d => {
+          if (d.user_type != 'seller') Promise.reject(location.pathname = '/users.html');
+          return Promise.resolve(that.myData = d)
+        })
         .then(() => that.updateUiMydata());
       that.getMyTableGroups()
         .then(d => that.myTableGroups = d)
@@ -50,8 +52,29 @@ class TableGroupsAndTables extends Request {
       that.getGroupTypes()
         .then(d => that.groupTypes = d)
       that.addNewTableGroupUi();
-
+      that.initWallet();
     })
+  }
+  initWallet() {
+    const that = this;
+    cfg()
+      .catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e + '' })))
+      .then(d => Promise.all(d.gameData.map(e => that.getGameData(e.id))))
+      .catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e + '' })))
+      .then(data => {
+        data.forEach(d => {
+          if (d.success) {
+            that.wallets.push(d.data.wallet);
+          }
+        });
+        that.updateUserCreditUI();
+      })
+  }
+  updateUserCreditUI() {
+    const el: HTMLElement | null = document.querySelector('#credits') || null;
+    this.creditTemplate
+      .then(t => t({ wallets: this.wallets }))
+      .then(html => el && (el.innerHTML = html))
   }
   addNewTableGroupUi() {
     const that = this;
@@ -103,6 +126,7 @@ class TableGroupsAndTables extends Request {
         })
     })
   }
+
   onTableAddClickHandler(id: number) {
     const that = this;
     const tableGroup = this.myTableGroups.filter(tg => tg.id == id)[0];
