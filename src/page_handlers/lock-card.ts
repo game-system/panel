@@ -3,9 +3,10 @@ import { default as cfg, Config } from "./config";
 import 'izitoast/dist/css/iziToast.min.css';
 import "@coreui/icons/css/all.min.css";
 import Handlebars from "handlebars"
-import { Request, User, TableGroup, Wallet } from "tombalaApi";
+import { Request, User, TableGroup, Wallet, Err } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui"
+import TranslateError from "./errMessagesTR";
 
 interface BreadCrumb {
 	id: number,
@@ -59,7 +60,7 @@ class Users extends Request {
 			that.initWallet();
 		})
 	}
-		initWallet() {
+	initWallet() {
 		const that = this;
 		cfg()
 			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e + '' })))
@@ -80,8 +81,10 @@ class Users extends Request {
 			.catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
 			//@ts-ignore
 			.then(({ success, reason, data }) => {
-				if (!success)
-					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				console.log(data);
 				that.lockCardData = data;
 				that.breadCrumbs.push({ id, funcName: 'ctx.updateTGUI()', name: 'Masalar' });
@@ -115,8 +118,10 @@ class Users extends Request {
 		that.getGameCards(1)
 			.catch(e => Promise.reject(IziToast.error({ title: 'İnternet Hatası', message: e })))
 			.then(({ success, reason, data }) => {
-				if (!success) Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
-				console.log(data);
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				return Promise.all([that.cardTemplate, data]);
 			})
 			.then(([t, data]) => t({ tgID, numLockCards: that.lockCardData, Cards: data }))
@@ -133,8 +138,10 @@ class Users extends Request {
 			.catch(er => IziToast.error({ title: 'Hata', message: er }))
 			//@ts-ignore
 			.then(({ success, reason, data }) => {
-				if (!success)
-					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				that.lockCardData.push(cardID);
 				that.updateCardUI(tgID);
 				return IziToast.success({ title: 'Başarılı', message: 'İşlem başarıyla gerçekleşti' });
@@ -146,8 +153,10 @@ class Users extends Request {
 			.catch(er => IziToast.error({ title: 'Hata', message: er }))
 			//@ts-ignore
 			.then(({ success, reason, data }) => {
-				if (!success)
-					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				delete that.lockCardData[that.lockCardData.indexOf(cardID)];
 				that.updateCardUI(tgID);
 				return IziToast.success({ title: 'Başarılı', message: 'İşlem başarıyla gerçekleşti' });
@@ -157,8 +166,10 @@ class Users extends Request {
 		return this.getGameData(1)
 			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e })))
 			.then(({ success, data, reason }) => {
-				if (!success)
-					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				return this.tableGroups = data.table_groups;
 			})
 	}
@@ -166,8 +177,10 @@ class Users extends Request {
 		return this.me()
 			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: 'internet sorunu' + e })))
 			.then(({ success, data, reason }) => {
-				if (!success)
-					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				if (data.user_type == 'user')
 					location.pathname = '/index.html';
 				return data;

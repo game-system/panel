@@ -1,6 +1,7 @@
 import swal from "sweetalert2";
 import cfg from "./config"
-import { Config, Request } from "tombalaApi";
+import { Config, Request, Err } from "tombalaApi";
+import TranslateError from "./errMessagesTR";
 export default class Login extends Request {
 	private loginEl = document.querySelector("#username") as HTMLInputElement;
 	private passwordEl = document.querySelector("#password") as HTMLInputElement;
@@ -25,14 +26,17 @@ export default class Login extends Request {
 		this.login(this.uname, this.password)
 			.catch(e => Promise.reject(swal.fire("Error", e.toString(), "error")))
 			.then(({ success, reason }) => {
-				console.log(reason)
 				if (!success) {
-					swal.fire("Hata", reason, "error")
+					const [title, msg] = TranslateError(reason as Err);
+					swal.fire(title, msg || '', "error")
 				} else {
 					this.me()
 						.catch(e => Promise.reject(swal.fire('Error', e, 'error')))
 						.then(({ success, data, reason }) => {
-							if (!success) return swal.fire('İnternet Hatası', reason, 'error');
+							if (!success) {
+								const [title, msg] = TranslateError(reason as Err);
+								swal.fire(title, msg || '', "error")
+							} 
 							if (data.user_type == 'user') {
 								return swal.fire('Giriş Başarısız', 'Bu sayfaya giriş yetkiniz yok', 'info');
 							}
