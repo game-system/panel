@@ -4,9 +4,10 @@ import 'izitoast/dist/css/iziToast.css';
 import "@coreui/icons/css/all.min.css";
 import '../css/tables.css';
 import Handlebars from "handlebars";
-import { Request, User, TableGroup, Table } from "tombalaApi";
+import { Request, User, TableGroup, Table, Wallet, Err } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui";
+import TranslateError from "./errMessagesTR";
 interface GroupType {
   name: string,
   type: "SameCardSameRoomMultiBuy" | "SameCardMultiRoomBuy" | "UserBuysFromSingleTable",
@@ -19,8 +20,10 @@ const simdilikGroupTypes: GroupType[] = [
 
 class TableGroupsAndTables extends Request {
   myData?: User;
+  wallets: Wallet[] = [];
   myTableGroups: TableGroup[] = [];
   groupTypes: GroupType[] = [];
+  creditTemplate = fetch(require("../partials/credit.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
   tableGroupsAndTablesTemplate = fetch(require("../partials/tableGroupsAndTables.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
   addTableTemplate = fetch(require("../partials/addTable.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
   editTableGroupTemplate = fetch(require("../partials/editTableGroup.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
@@ -39,10 +42,10 @@ class TableGroupsAndTables extends Request {
       that.modal = new Modal(mdlEl, {})
       that.modalBody = mdlEl?.querySelector(".modal-dialog") || undefined;
       that.getMyData()
-      .then(d => {
-        if (d.user_type != 'seller') Promise.reject(location.pathname = '/users.html');
-        return Promise.resolve(that.myData = d)
-      })
+        .then(d => {
+          if (d.user_type != 'seller') Promise.reject(location.pathname = '/users.html');
+          return Promise.resolve(that.myData = d)
+        })
         .then(() => that.updateUiMydata());
       that.getMyTableGroups()
         .then(d => that.myTableGroups = d)
@@ -50,8 +53,29 @@ class TableGroupsAndTables extends Request {
       that.getGroupTypes()
         .then(d => that.groupTypes = d)
       that.addNewTableGroupUi();
-
+      that.initWallet();
     })
+  }
+  initWallet() {
+    const that = this;
+    cfg()
+      .catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e + '' })))
+      .then(d => Promise.all(d.gameData.map(e => that.getGameData(e.id))))
+      .catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e + '' })))
+      .then(data => {
+        data.forEach(d => {
+          if (d.success) {
+            that.wallets.push(d.data.wallet);
+          }
+        });
+        that.updateUserCreditUI();
+      })
+  }
+  updateUserCreditUI() {
+    const el: HTMLElement | null = document.querySelector('#credits') || null;
+    this.creditTemplate
+      .then(t => t({ wallets: this.wallets }))
+      .then(html => el && (el.innerHTML = html))
   }
   addNewTableGroupUi() {
     const that = this;
@@ -78,8 +102,10 @@ class TableGroupsAndTables extends Request {
         that.addTableGroup(_data.game_id, _data.name + '', _data.group_type, _data.is_bonus)
           .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
           .then(({ data, reason, success }) => {
-            if (!success)
-              return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+            if (!success) {
+              const [title, msg] = TranslateError(reason as Err);
+              return Promise.reject(IziToast.error({ title, message:msg||''}));
+            }
             _data.id = data;
             that.myTableGroups.unshift(_data);
             that.updateTableGroupUI();
@@ -103,6 +129,7 @@ class TableGroupsAndTables extends Request {
         })
     })
   }
+
   onTableAddClickHandler(id: number) {
     const that = this;
     const tableGroup = this.myTableGroups.filter(tg => tg.id == id)[0];
@@ -126,8 +153,10 @@ class TableGroupsAndTables extends Request {
         that.addTable(t.group_id, t.name, t.price, t.c1, t.c2, t.t, t.tulum)
           .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
           .then(({ data, reason, success }) => {
-            if (!success)
-              return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+            if (!success) {
+              const [title, msg] = TranslateError(reason as Err);
+              return Promise.reject(IziToast.error({ title, message:msg||''}));
+            }
             t.id = data;
             tableGroup.tables.push(t);
             that.updateTableGroupUI();
@@ -161,8 +190,10 @@ class TableGroupsAndTables extends Request {
         that.deleteTableGroup(id)
           .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
           .then(({ data, reason, success }) => {
-            if (!success)
-              return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+            if (!success) {
+              const [title, msg] = TranslateError(reason as Err);
+              return Promise.reject(IziToast.error({ title, message:msg||''}));
+            }
             that.myTableGroups.forEach((e, i) => {
               if (e.id == id) that.myTableGroups.splice(i, 1);
             })
@@ -194,8 +225,10 @@ class TableGroupsAndTables extends Request {
         that.updateTable(id, table)
           .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
           .then(({ data, reason, success }) => {
-            if (!success)
-              return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+            if (!success) {
+              const [title, msg] = TranslateError(reason as Err);
+              return Promise.reject(IziToast.error({ title, message:msg||''}));
+            }
             that.updateTableGroupUI();
             that.modal.hide()
             return
@@ -213,8 +246,10 @@ class TableGroupsAndTables extends Request {
         that.deleteTable(id)
           .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
           .then(({ data, reason, success }) => {
-            if (!success)
-              return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+            if (!success) {
+              const [title, msg] = TranslateError(reason as Err);
+              return Promise.reject(IziToast.error({ title, message:msg||''}));
+            }
             that.myTableGroups.forEach((tg, index) => {
               if (tg.id == tableGroupID) {
                 tg.tables.forEach((t, i) => {
@@ -250,8 +285,10 @@ class TableGroupsAndTables extends Request {
     return this.me()
       .catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e })))
       .then(({ success, data, reason }) => {
-        if (!success)
-          return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+        if (!success) {
+          const [title, msg] = TranslateError(reason as Err);
+          return Promise.reject(IziToast.error({ title, message:msg||''}));
+        }
         if (data.user_type == 'user')
           location.pathname = '/index.html';
         return data;
@@ -261,8 +298,10 @@ class TableGroupsAndTables extends Request {
     return this.getGameData(1)
       .catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e })))
       .then(({ success, data, reason }) => {
-        if (!success)
-          return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
+        if (!success) {
+          const [title, msg] = TranslateError(reason as Err);
+          return Promise.reject(IziToast.error({ title, message:msg||''}));
+        }
         return data.table_groups;
       })
   }

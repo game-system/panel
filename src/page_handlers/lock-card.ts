@@ -3,9 +3,10 @@ import { default as cfg, Config } from "./config";
 import 'izitoast/dist/css/iziToast.min.css';
 import "@coreui/icons/css/all.min.css";
 import Handlebars from "handlebars"
-import { Request, User, TableGroup, } from "tombalaApi";
+import { Request, User, TableGroup, Wallet, Err } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui"
+import TranslateError from "./errMessagesTR";
 
 interface BreadCrumb {
 	id: number,
@@ -26,9 +27,11 @@ Handlebars.registerHelper('lockCard', function (numLockCards: number[], numCards
 
 class Users extends Request {
 	myData?: User;
+	wallets: Wallet[] = [];
 	lockCardData: number[] = [];
 	breadCrumbs: BreadCrumb[] = [];
 	tableGroups: TableGroup[] = [];
+	creditTemplate = fetch(require("../partials/credit.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
 	cardTemplate = fetch(require("../partials/card.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
 	tgforLockTemplate = fetch(require("../partials/tablegroupforlock.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
 	breadCrumbTemplate = fetch(require("../partials/breadcrumb.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
@@ -52,9 +55,25 @@ class Users extends Request {
 				})
 				.then(() => that.updateUiMydata());
 
-			that.getMyTableGroups().then(a => that.updateTGUI())
-			that.updateBreadCrumbUI()
+			that.getMyTableGroups().then(a => that.updateTGUI());
+			that.updateBreadCrumbUI();
+			that.initWallet();
 		})
+	}
+	initWallet() {
+		const that = this;
+		cfg()
+			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e + '' })))
+			.then(d => Promise.all(d.gameData.map(e => that.getGameData(e.id))))
+			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e + '' })))
+			.then(data => {
+				data.forEach(d => {
+					if (d.success) {
+						that.wallets.push(d.data.wallet);
+					}
+				});
+				that.updateUserCreditUI();
+			})
 	}
 	updateCardData(id: number) {
 		const that = this;
@@ -62,14 +81,23 @@ class Users extends Request {
 			.catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
 			//@ts-ignore
 			.then(({ success, reason, data }) => {
-				if (!success)
-					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				console.log(data);
 				that.lockCardData = data;
 				that.breadCrumbs.push({ id, funcName: 'ctx.updateTGUI()', name: 'Masalar' });
 				that.updateBreadCrumbUI();
 				return that.updateCardUI(id);
 			})
+	}
+
+	updateUserCreditUI() {
+		const el: HTMLElement | null = document.querySelector('#credits') || null;
+		this.creditTemplate
+			.then(t => t({ wallets: this.wallets }))
+			.then(html => el && (el.innerHTML = html))
 	}
 	updateTGUI() {
 		const that = this;
@@ -90,8 +118,10 @@ class Users extends Request {
 		that.getGameCards(1)
 			.catch(e => Promise.reject(IziToast.error({ title: 'İnternet Hatası', message: e })))
 			.then(({ success, reason, data }) => {
-				if (!success) Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
-				console.log(data);
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				return Promise.all([that.cardTemplate, data]);
 			})
 			.then(([t, data]) => t({ tgID, numLockCards: that.lockCardData, Cards: data }))
@@ -108,8 +138,10 @@ class Users extends Request {
 			.catch(er => IziToast.error({ title: 'Hata', message: er }))
 			//@ts-ignore
 			.then(({ success, reason, data }) => {
-				if (!success)
-					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				that.lockCardData.push(cardID);
 				that.updateCardUI(tgID);
 				return IziToast.success({ title: 'Başarılı', message: 'İşlem başarıyla gerçekleşti' });
@@ -121,8 +153,10 @@ class Users extends Request {
 			.catch(er => IziToast.error({ title: 'Hata', message: er }))
 			//@ts-ignore
 			.then(({ success, reason, data }) => {
-				if (!success)
-					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				delete that.lockCardData[that.lockCardData.indexOf(cardID)];
 				that.updateCardUI(tgID);
 				return IziToast.success({ title: 'Başarılı', message: 'İşlem başarıyla gerçekleşti' });
@@ -132,8 +166,10 @@ class Users extends Request {
 		return this.getGameData(1)
 			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e })))
 			.then(({ success, data, reason }) => {
-				if (!success)
-					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				return this.tableGroups = data.table_groups;
 			})
 	}
@@ -141,8 +177,10 @@ class Users extends Request {
 		return this.me()
 			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: 'internet sorunu' + e })))
 			.then(({ success, data, reason }) => {
-				if (!success)
-					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				if (data.user_type == 'user')
 					location.pathname = '/index.html';
 				return data;

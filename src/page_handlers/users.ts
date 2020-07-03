@@ -4,9 +4,10 @@ import 'izitoast/dist/css/iziToast.min.css';
 import "@coreui/icons/css/all.min.css";
 import '../css/users.css';
 import Handlebars from "handlebars"
-import { Request, User, Wallet } from "tombalaApi";
+import { Request, User, Wallet, Err } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui";
+import TranslateError from "./errMessagesTR";
 
 class Users extends Request {
 	myData?: User;
@@ -68,8 +69,10 @@ class Users extends Request {
 				if (!pass?.value) return pass?.focus()
 				that.addChild({ id: id?.value || "", password: pass?.value || "" } as User)
 					.then(({ data, reason, success }) => {
-						if (!success)
-							return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
+						if (!success) {
+							const [title, msg] = TranslateError(reason as Err);
+							return Promise.reject(IziToast.error({ title, message: msg || '' }));
+						}
 						data.date_str = new Date(data.created_at * 1000).toISOString().split("T")[0];
 						that.myChildren.unshift(data)
 						that.updateChildrenUI()
@@ -117,7 +120,10 @@ class Users extends Request {
 		this.getWallets(user, this.cfg.gameData.map(g => g.id))
 			.catch(() => Promise.reject(IziToast.error({ title: 'Hata', message: 'Network Hatası' })))
 			.then(({ success, reason, data }) => {
-				if (!success) return Promise.reject(IziToast.error({ title: 'Hata', message: reason }))
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				return Promise.all([this.moneyTransferTpl, data])
 			})
 			.then(([t, data]) => {
@@ -135,7 +141,10 @@ class Users extends Request {
 		this.updateCredit(user, isReceive ? Math.abs(credit) * -1 : credit, gameID, elems[1].checked)
 			.catch(() => Promise.reject(IziToast.error({ title: 'Hata', message: 'İşlem başarısız' })))
 			.then(({ success, reason, data }) => {
-				if (!success) return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				const index = that.wallets.reduce((stt, curr, i) => (curr.game_id == gameID) ? i : stt, -1);
 				if (index === -1) return;
 				that.wallets[index][elems[1].checked ? 'bonus_balance' : 'balance'] -= isReceive ? Math.abs(credit) * -1 : credit;
@@ -161,7 +170,10 @@ class Users extends Request {
 				this.updateProfile(user, userInfo)
 					.catch(() => Promise.reject(IziToast.error({ title: 'Hata', message: 'İşlem başarısız' })))
 					.then(({ success, reason }) => {
-						if (!success) return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+						if (!success) {
+							const [title, msg] = TranslateError(reason as Err);
+							return Promise.reject(IziToast.error({ title, message: msg || '' }));
+						}
 						return IziToast.success({ title: 'Başarılı', message: 'İşlem başarıyla gerçekleşti' })
 					})
 			}
@@ -180,8 +192,10 @@ class Users extends Request {
 			delel?.addEventListener("click", () => {
 				this.deleteChild(user, true)
 					.then(({ success, reason }) => {
-						if (!success)
-							return IziToast.error({ title: 'Hata', message: reason })
+						if (!success) {
+							const [title, msg] = TranslateError(reason as Err);
+							return Promise.reject(IziToast.error({ title, message: msg || '' }));
+						}
 						IziToast.success({ title: 'Başarılı', message: 'Silindi' })
 						this.myChildren = this.myChildren.filter(u => u.id != uid)
 						this.updateChildrenUI()
@@ -192,8 +206,10 @@ class Users extends Request {
 			enableEl?.addEventListener("click", () => {
 				this.enableChild(user, true)
 					.then(({ success, reason }) => {
-						if (!success)
-							return IziToast.error({ title: 'Hata', message: reason })
+						if (!success) {
+							const [title, msg] = TranslateError(reason as Err);
+							return Promise.reject(IziToast.error({ title, message: msg || '' }));
+						}
 						IziToast.success({ title: 'Başarılı', message: 'Engel Kaldırıldı' });
 						this.myChildren.forEach(u => {
 							u.id == uid && (u.is_disabled = false)
@@ -206,8 +222,10 @@ class Users extends Request {
 			disableEl?.addEventListener("click", () => {
 				this.disableChild(user, true)
 					.then(({ success, reason }) => {
-						if (!success)
-							return IziToast.error({ title: 'Hata', message: reason })
+						if (!success) {
+							const [title, msg] = TranslateError(reason as Err);
+							return Promise.reject(IziToast.error({ title, message: msg || '' }));
+						}
 						IziToast.success({ title: 'Başarılı', message: 'Engellendi' });
 						this.myChildren.forEach(u => {
 							u.id == uid && (u.is_disabled = true)
@@ -229,8 +247,10 @@ class Users extends Request {
 		return this.me()
 			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: 'internet sorunu' + e })))
 			.then(({ success, data, reason }) => {
-				if (!success)
-					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				if (data.user_type == 'user')
 					location.pathname = '/index.html';
 				return data;
@@ -240,8 +260,10 @@ class Users extends Request {
 		return this.children()
 			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: 'internet sorunu' + e })))
 			.then(({ success, data, reason }) => {
-				if (!success)
-					return Promise.reject(IziToast.error({ title: 'Hata', message: reason }));
+				if (!success) {
+					const [title, msg] = TranslateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || '' }));
+				}
 				return data;
 			})
 	}
