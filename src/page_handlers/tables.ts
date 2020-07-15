@@ -235,6 +235,10 @@ class TableGroupsAndTables extends Request {
               const [title, msg] = TranslateError(reason as Err);
               return Promise.reject(IziToast.error({ title, message:msg||''}));
             }
+            that.myTableGroups.filter(()=>id=table.group_id)[0].tables.forEach((e)=>{
+              if(e.id==table.id) Object.assign(e,table);
+              console.log(e,table);
+            })
             that.updateTableGroupUI();
             that.modal.hide()
             return
