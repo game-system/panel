@@ -149,8 +149,11 @@ class TableGroupsAndTables extends Request {
           c2: parseInt(formInputElems[3].value),
           t: parseInt(formInputElems[4].value),
           tulum: parseInt(formInputElems[5].value),
+          first_5:parseInt(formInputElems[6].value),
+          first_10:parseInt(formInputElems[7].value),
+          min_cards:parseInt(formInputElems[8].value),
         }
-        that.addTable(t.group_id, t.name, t.price, t.c1, t.c2, t.t, t.tulum)
+        that.addTable(t.group_id, t.name, t.price, t.c1, t.c2, t.t, t.tulum, t.first_5, t.first_10, t.min_cards)
           .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
           .then(({ data, reason, success }) => {
             if (!success) {
@@ -222,6 +225,9 @@ class TableGroupsAndTables extends Request {
         if (formInputElems[3].value) table.c2 = parseInt(formInputElems[3].value);
         if (formInputElems[4].value) table.t = parseInt(formInputElems[4].value);
         if (formInputElems[5].value) table.tulum = parseInt(formInputElems[5].value);
+        if (formInputElems[6].value) table.first_5 = parseInt(formInputElems[6].value);
+        if (formInputElems[7].value) table.first_10 = parseInt(formInputElems[7].value);
+        if (formInputElems[8].value) table.min_cards = parseInt(formInputElems[8].value);
         that.updateTable(id, table)
           .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
           .then(({ data, reason, success }) => {
@@ -229,6 +235,10 @@ class TableGroupsAndTables extends Request {
               const [title, msg] = TranslateError(reason as Err);
               return Promise.reject(IziToast.error({ title, message:msg||''}));
             }
+            that.myTableGroups.filter(()=>id=table.group_id)[0].tables.forEach((e)=>{
+              if(e.id==table.id) Object.assign(e,table);
+              console.log(e,table);
+            })
             that.updateTableGroupUI();
             that.modal.hide()
             return
