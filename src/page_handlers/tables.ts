@@ -93,8 +93,7 @@ class TableGroupsAndTables extends Request {
           id: -1,
           game_id: 1,
           name: tableGroupName.value,
-          //@ts-ignore
-          group_type: tableGroupType.value,
+          group_type: tableGroupType.value as any  ,
           is_bonus: checkbox.checked,
           seller_id: '_seller1',
           tables: [] as Table[]
@@ -192,7 +191,7 @@ class TableGroupsAndTables extends Request {
       this.modalBody?.querySelector('#doDeleteTableGroup')?.addEventListener('click', () => {
         that.deleteTableGroup(id)
           .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
-          .then(({ data, reason, success }) => {
+          .then(({  reason, success }) => {
             if (!success) {
               const [title, msg] = TranslateError(reason as Err);
               return Promise.reject(IziToast.error({ title, message:msg||''}));
@@ -230,7 +229,7 @@ class TableGroupsAndTables extends Request {
         if (formInputElems[8].value) table.min_cards = parseInt(formInputElems[8].value);
         that.updateTable(id, table)
           .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
-          .then(({ data, reason, success }) => {
+          .then(({  reason, success }) => {
             if (!success) {
               const [title, msg] = TranslateError(reason as Err);
               return Promise.reject(IziToast.error({ title, message:msg||''}));
@@ -255,7 +254,7 @@ class TableGroupsAndTables extends Request {
       this.modalBody?.querySelector('#doDeleteTable')?.addEventListener('click', () => {
         that.deleteTable(id)
           .catch(er => Promise.reject(IziToast.error({ title: 'Hata', message: er })))
-          .then(({ data, reason, success }) => {
+          .then(({  reason, success }) => {
             if (!success) {
               const [title, msg] = TranslateError(reason as Err);
               return Promise.reject(IziToast.error({ title, message:msg||''}));
