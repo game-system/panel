@@ -7,6 +7,7 @@ import { Request, User, TableGroup, Wallet, Err } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui"
 import TranslateError from "./errMessagesTR";
+import { loadTpl } from "../utils";
 
 interface BreadCrumb {
 	id: number,
@@ -31,14 +32,16 @@ class Users extends Request {
 	lockCardData: number[] = [];
 	breadCrumbs: BreadCrumb[] = [];
 	tableGroups: TableGroup[] = [];
-	creditTemplate = fetch(require("../partials/credit.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
-	cardTemplate = fetch(require("../partials/card.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
-	tgforLockTemplate = fetch(require("../partials/tablegroupforlock.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
-	breadCrumbTemplate = fetch(require("../partials/breadcrumb.hbs")).then(d => d.text()).then(Handlebars.compile.bind(this));
+	creditTemplate = loadTpl(require("../partials/credit.hbs"))
+	cardTemplate = loadTpl(require("../partials/card.hbs"))
+	tgforLockTemplate = loadTpl(require("../partials/tablegroupforlock.hbs"))
+	breadCrumbTemplate = loadTpl(require("../partials/breadcrumb.hbs"))
+	gameIdSelectorTpl = loadTpl(require("../partials/gameid_selector.hbs"))
 	modal: any;
 	con: HTMLElement | null = null;
 	modalBody?: HTMLElement;
 	cfg: Config = {} as Config;
+	selectedGameId?: number;
 	constructor(c: Config) {
 		super(c)
 		this.cfg = c;
@@ -55,9 +58,28 @@ class Users extends Request {
 				})
 				.then(() => that.updateUiMydata());
 
-			that.getMyTableGroups().then(() => that.updateTGUI());
 			that.updateBreadCrumbUI();
 			that.initWallet();
+		})
+	}
+	loadGameIdSelector() {
+		this.gameIdSelectorTpl.then(tpl => {
+			const holder: HTMLElement = (window as any).gameIdSelectorHolder;
+			holder.innerHTML = tpl({ wallets: this.wallets })
+			this.selectedGameId = this.wallets[0]?.game_id
+			if (this.selectedGameId) {
+				this
+					.getMyTableGroups()
+					.then(() => this.updateTGUI());
+			}
+			holder.querySelector("select")?.addEventListener("change", e => {
+				this.selectedGameId = parseInt((e.target as HTMLSelectElement)?.value)
+				if (this.selectedGameId) {
+					this
+						.getMyTableGroups()
+						.then(() => this.updateTGUI());
+				}
+			})
 		})
 	}
 	initWallet() {
@@ -70,6 +92,7 @@ class Users extends Request {
 				data.forEach(d => {
 					if (d.success) {
 						that.wallets.push(d.data.wallet);
+						this.loadGameIdSelector()
 					}
 				});
 				that.updateUserCreditUI();
@@ -115,7 +138,7 @@ class Users extends Request {
 	}
 	updateCardUI(tgID: number) {
 		const that = this;
-		that.getGameCards(1)
+		that.getGameCards(this.selectedGameId||1)
 			.catch(e => Promise.reject(IziToast.error({ title: 'İnternet Hatası', message: e })))
 			.then(({ success, reason, data }) => {
 				if (!success) {
@@ -163,7 +186,7 @@ class Users extends Request {
 			})
 	}
 	async getMyTableGroups(): Promise<TableGroup[]> {
-		return this.getGameData(1)
+		return this.getGameData(this.selectedGameId||1)
 			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e })))
 			.then(({ success, data, reason }) => {
 				if (!success) {
