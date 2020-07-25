@@ -14,7 +14,7 @@ interface BreadCrumb {
 	name: string
 }
 
-Handlebars.registerHelper('lockCard', function (numLockCards: number[], numCards: number, opt) {
+Handlebars.registerHelper('lockCard', function(numLockCards: number[], numCards: number, opt) {
 	for (let i = 0; i < numLockCards.length; i++) {
 		if (numLockCards[i] == numCards) {
 			//@ts-ignore
@@ -55,17 +55,17 @@ class Users extends Request {
 				})
 				.then(() => that.updateUiMydata());
 
-			that.getMyTableGroups().then(a => that.updateTGUI());
+			that.getMyTableGroups().then(() => that.updateTGUI());
 			that.updateBreadCrumbUI();
 			that.initWallet();
 		})
 	}
 	initWallet() {
 		const that = this;
-		cfg()
-			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e + '' })))
-			.then(d => Promise.all(d.gameData.map(e => that.getGameData(e.id))))
-			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e + '' })))
+		Promise.all(this.cfg.gameIds.map(that.getGameData.bind(this)))
+			.catch(e =>
+				Promise.reject(IziToast.error({ title: "Hata", message: e + "" }))
+			)
 			.then(data => {
 				data.forEach(d => {
 					if (d.success) {
@@ -73,7 +73,7 @@ class Users extends Request {
 					}
 				});
 				that.updateUserCreditUI();
-			})
+			});
 	}
 	updateCardData(id: number) {
 		const that = this;

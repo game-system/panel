@@ -8,7 +8,7 @@ navBarTemplate.then(t => t({ seller: userType == 'seller' ? true : false })).the
 	document.querySelector("#sidebar")?.insertAdjacentHTML("beforeend", html);
 })
 //@ts-ignore
-window.logout_a.addEventListener("click", e => {
+window.logout_a?.addEventListener("click", e => {
 	e.preventDefault()
 	toastr.success("Çıkış Yapılıyor", "", { positionClass: "toast-top-full-width" })
 	//@ts-ignore
