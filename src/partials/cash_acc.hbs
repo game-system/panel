@@ -1,0 +1,30 @@
+<table class="table table-stripped">
+	<thead>
+		<th>Kullanıcı</th>
+		<th>Yeni Kredi</th>
+		<th>Meblağ</th>
+		<th>Oyun</th>
+		<th>Tarih</th>
+		<th>bonus</th>
+	</thead>
+	<tbody>
+		{{#with data}}
+			{{#if success}}
+				{{#each data}}
+					<tr>
+						{{#with_ctx @root.uname}}
+						<td>{{uid}}</td>
+						<td>{{credit}}</td>
+						<td>{{ctx.amount}}</td>
+						<td>{{ctx.game_name}}</td>
+						<td>{{timefmt ctx.time}}</td>
+						<td><input type="checkbox" disabled="disabled" {{#if ctx.is_bonus}} checked="checked"{{/if}}> </td>
+						{{/with_ctx}}
+					</tr>
+				{{/each}}
+			{{else}}
+				Bu aya ait muhasebe bulunamadı.
+			{{/if}}
+		{{/with}}
+	</tbody>
+</table>
