@@ -21,6 +21,7 @@
         "izitoast": "^1.4.0",
         "jquery": "^3.5.1",
         "perfect-scrollbar": "1.5.0",
+        "simple-datatables": "^2.1.13",
         "sweetalert2": "^9.14.2",
         "toastr": "^2.1.4",
         "tombalaApi": "git+https://github.com/game-system/tombalaUiRequests.git#0.18.0"

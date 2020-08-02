@@ -9,30 +9,36 @@ import { Modal } from "@coreui/coreui";
 import TranslateError from "./errMessagesTR";
 import { loadTpl } from "../utils";
 import { registerHelper } from "handlebars";
+import {DataTable} from "simple-datatables"
+import "simple-datatables/dist/style.css"
 function numFmt(n: number) {
-	return n < 10 ? "0" + n : "" + n
+	return n < 10 ? "0" + n : "" + n;
 }
 registerHelper("timefmt", function(val: number) {
-	const d = new Date(val * 1000)
-	const month = d.getMonth() + 1
-	const day = d.getDay() + 1
-	return `${d.getFullYear()}/${numFmt(month)}/${numFmt(day)} ${numFmt(d.getHours())}:${numFmt(d.getMinutes())}`
+	const d = new Date(val * 1000);
+	const month = d.getMonth() + 1;
+	const day = d.getDay() + 1;
+	return `${d.getFullYear()}/${numFmt(month)}/${numFmt(day)} ${numFmt(d.getHours())}:${numFmt(d.getMinutes())}`;
 });
 registerHelper("with_ctx", function(myUid: string, render: any) {
 	//@ts-ignore
-	let o: CashAcc = this
-	return render.fn(o.from !== myUid ? { credit: o.from_new_credit, uid: o.from, ctx: o } : { credit: o.to_new_credit, uid: o.to, ctx: o })
-})
+	let o: CashAcc = this;
+	return render.fn(
+		o.from !== myUid
+			? { credit: o.from_new_credit, uid: o.from, ctx: o, cls: "bg-danger" }
+			: { credit: o.to_new_credit, uid: o.to, ctx: o, cls: "bg-success" }
+	);
+});
 interface Windw extends Window {
-	accPlace: HTMLElement
+	accPlace: HTMLElement;
 }
 const windw: Windw = window as any;
 
 class Users extends Request {
 	myData?: User;
 	wallets: Wallet[] = [];
-	creditTemplate = loadTpl(require("../partials/credit.hbs"))
-	accTpl = loadTpl(require("../partials/cash_acc.hbs"))
+	creditTemplate = loadTpl(require("../partials/credit.hbs"));
+	accTpl = loadTpl(require("../partials/cash_acc.hbs"));
 	modal: any;
 	modalBody?: HTMLElement;
 	cfg: Config = {} as Config;
@@ -47,7 +53,7 @@ class Users extends Request {
 			that
 				.getMyData()
 				.then(d => (that.myData = d))
-				.then(() => that.updateUiMydata())
+				.then(() => that.updateUiMydata());
 			that.initWallet();
 			this.render_accounting();
 		});
@@ -96,9 +102,40 @@ class Users extends Request {
 			});
 	}
 	async render_accounting() {
-		const date = new Date()
-		Promise.all([this.getCashAccounting(date.getUTCFullYear(), date.getUTCMonth() + 1), this.accTpl])
-			.then(([d, tpl]) => windw.accPlace.innerHTML = tpl({ uname: this.myData?.id, data: d }))
+		const date = new Date();
+		Promise.all([
+			this.getCashAccounting(date.getUTCFullYear(), date.getUTCMonth() + 1),
+			this.accTpl
+		]).then(([d, tpl]) => {
+			const income = d.data.reduce((o, c) => {
+				const newAmount = o + c.amount;
+				return c.from === this.myData?.id && !c.is_bonus ? newAmount : o;
+			}, 0);
+			const expense = d.data.reduce((o, c) => {
+				const newAmount = o + c.amount;
+				return c.from !== this.myData?.id && !c.is_bonus ? newAmount : o;
+			}, 0);
+			const bonus_income = d.data.reduce((o, c) => {
+				const newAmount = o + c.amount;
+				return c.from === this.myData?.id && c.is_bonus ? newAmount : o;
+			}, 0);
+			const bonus_expense = d.data.reduce((o, c) => {
+				const newAmount = o + c.amount;
+				return c.from !== this.myData?.id && c.is_bonus ? newAmount : o;
+			}, 0);
+			return windw.accPlace.innerHTML = tpl({
+				expense,
+				income,
+				profit: income - expense,
+				bonus_income,
+				bonus_expense,
+				bonus_profit: bonus_income - bonus_expense,
+				uname: this.myData?.id,
+				data: d
+			});
+		}).then(()=>{
+			new DataTable("#accounting-table")
+		})
 	}
 }
 cfg().then(

@@ -8,6 +8,8 @@ import { Request, User, Wallet, Err } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui";
 import TranslateError from "./errMessagesTR";
+import {DataTable} from "simple-datatables"
+import "simple-datatables/dist/style.css"
 
 class Users extends Request {
 	myData?: User;
@@ -134,7 +136,7 @@ class Users extends Request {
 	}
 	updateChildrenUI() {
 		const that = this;
-		const el = document.querySelector("#users_table");
+		const el = document.querySelector("#users-table-el");
 		that.usersTemplate
 			.then(t => {
 				return t({
@@ -143,6 +145,7 @@ class Users extends Request {
 			})
 			.then(tpl => {
 				el && (el.innerHTML = tpl);
+				new DataTable(el)
 			});
 	}
 	onMoneyClickHandler(uid: string) {

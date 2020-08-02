@@ -1,8 +1,34 @@
-<table class="table table-stripped">
+<div class="row text-center font-weight-bold" style="font-size:1.5rem">
+	<div class="card col">
+		<div class="card-title">KASA</div>
+		<div class="card-body">
+			<div> Kredi : {{profit}}</div>
+			<div>
+				Bonus : {{bonus_profit}}
+			</div>
+		</div>
+	</div>
+	<div class="card col">
+		<div class="card-title">GİRİŞ</div>
+		<div class="card-body">
+			<div>Kredi: {{income}}</div>
+			<div>Bonus: {{bonus_income}}</div>
+			
+		</div>
+	</div>
+	<div class="card col">
+		<div class="card-title ">ÇIKIŞ</div>
+		<div class="card-body">
+			<div>Kredi: {{expense}}</div>
+			<div>Bonus: {{bonus_expense}}</div>
+		</div>
+	</div>
+</div>
+<table class="table table-stripped display" id="accounting-table">
 	<thead>
 		<th>Kullanıcı</th>
-		<th>Yeni Kredi</th>
 		<th>Meblağ</th>
+		<th>Yeni Kredi</th>
 		<th>Oyun</th>
 		<th>Tarih</th>
 		<th>bonus</th>
@@ -11,16 +37,16 @@
 		{{#with data}}
 			{{#if success}}
 				{{#each data}}
-					<tr>
-						{{#with_ctx @root.uname}}
-						<td>{{uid}}</td>
-						<td>{{credit}}</td>
-						<td>{{ctx.amount}}</td>
-						<td>{{ctx.game_name}}</td>
-						<td>{{timefmt ctx.time}}</td>
-						<td><input type="checkbox" disabled="disabled" {{#if ctx.is_bonus}} checked="checked"{{/if}}> </td>
-						{{/with_ctx}}
-					</tr>
+					{{#with_ctx @root.uname}}
+						<tr class="font-weight-bold" style="font-size:1.0rem">
+							<td>{{uid}}</td>
+							<td class="{{cls}}">{{ctx.amount}}</td>
+							<td>{{credit}}</td>
+							<td>{{ctx.game_name}}</td>
+							<td>{{timefmt ctx.time}}</td>
+							<td><input type="checkbox" disabled="disabled" {{#if ctx.is_bonus}} checked="checked"{{/if}}> </td>
+						</tr>
+					{{/with_ctx}}
 				{{/each}}
 			{{else}}
 				Bu aya ait muhasebe bulunamadı.
