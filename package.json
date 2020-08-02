@@ -4,10 +4,10 @@
     "description": "Free Bootstrap Admin Template",
     "main": "src/index.html",
     "scripts": {
-        "dev": "parcel   --port=8080 --host=0.0.0.0 src/index.html src/users.html src/tables.html src/lock-card.html",
-        "watch": "parcel watch src/index.html src/users.html src/tables.html ",
+        "dev": "parcel   --port=8080 --host=0.0.0.0 src/*.html",
+        "watch": "parcel watch src/*.html",
         "server": "live-server dist",
-        "build": "parcel build src/index.html src/users.html src/tables.html  src/lock-card.html",
+        "build": "parcel build src/*.html",
         "nuke": "rimraf .cache dist"
     },
     "dependencies": {
