@@ -52,6 +52,9 @@ export const handlebarsHelpers = {
 				return data;
 		}
 	},
+	neq:function(a:any,b:any,opt:any){
+		return a!=b?opt.fn(this):opt.inverse(this)
+	}
 };
 //@ts-ignore
 handlebarsHelpers["-"] = function(a: number, b: number) {

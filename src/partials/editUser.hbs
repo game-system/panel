@@ -1,3 +1,4 @@
+{{#with user}}
 <div class="modal-content">
   <div class="modal-header">
     <h5 class="modal-title">Düzenle: {{id}}</h5>
@@ -9,9 +10,13 @@
      <input type="email" class="form-control" placeholder="{{#if email}} {{email}}{{else}}email{{/if}}"></br>
      <input type="number" class="form-control" placeholder="{{#if phone}} {{phone}}{{else}}telefon{{/if}}"></br>
      <input type="password" class="form-control" placeholder="password"></br>
+	 {{#neq @root.admin.user_type "seller"}}
+		 <input type="password" class="form-control" placeholder="reset parolası"></br>
+	 {{/neq}}
     <button id='saveUserData' type="button" class="btn btn-primary" data-dismiss="modal">Kaydet</button>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
   </div>
 </div>
+{{/with}}

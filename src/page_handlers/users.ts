@@ -3,33 +3,24 @@ import { default as cfg, Config } from "./config";
 import "izitoast/dist/css/iziToast.min.css";
 import "@coreui/icons/css/all.min.css";
 import "../css/users.css";
-import Handlebars from "handlebars";
+import { registerHelper } from "handlebars";
 import { Request, User, Wallet, Err } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui";
 import translateError from "./errMessagesTR";
-import {DataTable} from "simple-datatables"
-import "simple-datatables/dist/style.css"
-
+import { DataTable } from "simple-datatables";
+import "simple-datatables/dist/style.css";
+import { loadTpl, handlebarsHelpers } from "../utils";
+registerHelper(handlebarsHelpers);
 class Users extends Request {
 	myData?: User;
 	wallets: Wallet[] = [];
 	myChildren: User[] = [];
-	usersTemplate = fetch(require("../partials/usersTable.hbs"))
-		.then(d => d.text())
-		.then(Handlebars.compile.bind(this));
-	userDeleteTpl = fetch(require("../partials/deleteUser.hbs"))
-		.then(d => d.text())
-		.then(Handlebars.compile.bind(this));
-	creditTemplate = fetch(require("../partials/credit.hbs"))
-		.then(d => d.text())
-		.then(Handlebars.compile.bind(this));
-	moneyTransferTpl = fetch(require("../partials/moneyTransfer.hbs"))
-		.then(d => d.text())
-		.then(Handlebars.compile.bind(this));
-	editUserTpl = fetch(require("../partials/editUser.hbs"))
-		.then(d => d.text())
-		.then(Handlebars.compile.bind(this));
+	usersTemplate = loadTpl(require("../partials/usersTable.hbs"));
+	userDeleteTpl = loadTpl(require("../partials/deleteUser.hbs"));
+	creditTemplate = loadTpl(require("../partials/credit.hbs"));
+	moneyTransferTpl = loadTpl(require("../partials/moneyTransfer.hbs"));
+	editUserTpl = loadTpl(require("../partials/editUser.hbs"));
 	modal: any;
 	modalBody?: HTMLElement;
 	cfg: Config = {} as Config;
@@ -145,7 +136,7 @@ class Users extends Request {
 			})
 			.then(tpl => {
 				el && (el.innerHTML = tpl);
-				new DataTable(el)
+				new DataTable(el);
 			});
 	}
 	onMoneyClickHandler(uid: string) {
@@ -193,7 +184,7 @@ class Users extends Request {
 					IziToast.error({ title: "Hata", message: "İşlem başarısız" })
 				)
 			)
-			.then(({ success, reason, data }) => {
+			.then(({ success, reason }) => {
 				if (!success) {
 					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || "" }));
@@ -202,15 +193,19 @@ class Users extends Request {
 					(stt, curr, i) => (curr.game_id == gameID ? i : stt),
 					-1
 				);
-				if (index === -1) return;
+				if (index === -1) return Promise.reject("");
 				that.wallets[index][
 					elems[1].checked ? "bonus_balance" : "balance"
 				] -= isReceive ? Math.abs(credit) * -1 : credit;
 				that.updateUserCreditUI();
+
+				return Promise.resolve("")
 			});
+
 	}
 	onUserEditClickHandler(uid: string) {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
+		const admin = this.myData;
 		if (!user)
 			return IziToast.error({
 				title: "Hata",
@@ -218,7 +213,7 @@ class Users extends Request {
 			});
 		this.editUserTpl
 			.then(t => {
-				this.modalBody && (this.modalBody.innerHTML = t(user));
+				this.modalBody && (this.modalBody.innerHTML = t({ admin, user }));
 				this.modal.show();
 				return this.modalBody?.querySelector("#saveUserData") as
 					| HTMLElement
@@ -230,7 +225,13 @@ class Users extends Request {
 					email: string;
 					phone: string;
 					password: string;
-				} = {} as { email: string; phone: string; password: string };
+					acc_reset_passwd: string;
+				} = {} as {
+					email: string;
+					phone: string;
+					password: string;
+					acc_reset_passwd: string;
+				};
 				el.onclick = () => {
 					const userInfoElems = this.modalBody?.querySelectorAll(
 						".form-control"
@@ -240,6 +241,8 @@ class Users extends Request {
 					if (userInfoElems[1]?.value) userInfo.phone = userInfoElems[1].value;
 					if (userInfoElems[2]?.value)
 						userInfo.password = userInfoElems[2].value;
+					if (userInfoElems[3]?.value)
+						userInfo.acc_reset_passwd = userInfoElems[3].value;
 					this.updateProfile(user, userInfo)
 						.catch(() =>
 							Promise.reject(
