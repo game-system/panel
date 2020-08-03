@@ -1,0 +1,38 @@
+<table id="cpn-history" class="table table-stripped">
+	<thead>
+		<th>Oyun No</th>
+		<th>Oyun Adı</th>
+		<th>Masa Grubu</th>
+		<th>Masa</th>
+		<th>Kart</th>
+		<th>Yeni Kredi</th>
+		<th>Tarih</th>
+		<th>Fiyat</th>
+		<th>1. Çinko</th>
+		<th>2. Çinko</th>
+		<th>Tombala</th>
+		<th>İlk 5 top</th>
+		<th>İlk 10 top</th>
+		<th>Tulum</th>
+	</thead>
+	<tbody>
+		{{#each history}}
+			<tr>
+				<td>{{sessionid}}</td>
+				<td>{{game_name}}</td>
+				<td>{{tg_name}}</td>
+				<td>{{table_name}}</td>
+				<td>{{couponid}}</td>
+				<td>{{couponCredit this}}</td>
+				<td>{{timefmt op_time}}</td>
+				<td>{{price}}</td>
+				<td>{{c1}}</td>
+				<td>{{c2}}</td>
+				<td>{{t}}</td>
+				<td>{{c1_5}}</td>
+				<td>{{c2_10}}</td>
+				<td>{{tulum}}</td>
+			</tr>
+		{{/each}}
+	</tbody>
+</table>

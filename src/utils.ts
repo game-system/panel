@@ -1,5 +1,5 @@
 import { compile } from "handlebars";
-import { CashAcc } from "tombalaApi";
+import { CashAcc, CouponHistory } from "tombalaApi";
 export async function loadTpl(
 	addr: string
 ): Promise<HandlebarsTemplateDelegate<any>> {
@@ -54,6 +54,9 @@ export const handlebarsHelpers = {
 	},
 	neq:function(a:any,b:any,opt:any){
 		return a!=b?opt.fn(this):opt.inverse(this)
+	},
+	couponCredit:function(cpnLog:CouponHistory){
+		return cpnLog.new_credit?cpnLog.new_credit:cpnLog.buy_time_credit
 	}
 };
 //@ts-ignore

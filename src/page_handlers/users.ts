@@ -11,6 +11,7 @@ import translateError from "./errMessagesTR";
 import { DataTable } from "simple-datatables";
 import "simple-datatables/dist/style.css";
 import { loadTpl, handlebarsHelpers } from "../utils";
+import swal from "sweetalert2";
 registerHelper(handlebarsHelpers);
 class Users extends Request {
 	myData?: User;
@@ -21,6 +22,7 @@ class Users extends Request {
 	creditTemplate = loadTpl(require("../partials/credit.hbs"));
 	moneyTransferTpl = loadTpl(require("../partials/moneyTransfer.hbs"));
 	editUserTpl = loadTpl(require("../partials/editUser.hbs"));
+	couponHistoryTpl = loadTpl(require("../partials/couponHistory.hbs"));
 	modal: any;
 	modalBody?: HTMLElement;
 	cfg: Config = {} as Config;
@@ -264,6 +266,28 @@ class Users extends Request {
 				};
 			});
 		return null;
+	}
+	onUserCouponHistoryClick(uid: string) {
+		const user = this.myChildren.filter(usr => usr.id == uid)[0];
+		const admin = this.myData;
+		if (!user)
+			return IziToast.error({
+				title: "Hata",
+				message: "Geçersiz kullanıcı idsi, Lütfen bizi arayın"
+			});
+		const d = new Date();
+		Promise.all([this.couponHistoryTpl, this.tombalaCouponHistory(user.id, d.getUTCFullYear(), d.getUTCMonth() + 1)])
+			.then(([t, data]) => {
+				// this.modalBody && (this.modalBody.innerHTML = t({ admin, user, history: data.data }));
+				swal.fire({
+					title:"Kupon Geçmişi",
+					html:t({ admin, user, history: data.data }),
+					width:"100%",
+					onRender:()=>{
+						new DataTable("#cpn-history")
+					}
+				})
+			})
 	}
 
 	onUserDeleteClickHandler(uid: string) {
