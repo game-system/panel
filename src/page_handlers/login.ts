@@ -1,7 +1,7 @@
 import swal from "sweetalert2";
 import cfg from "./config"
 import { Config, Request, Err } from "tombalaApi";
-import TranslateError from "./errMessagesTR";
+import translateError from "./errMessagesTR";
 export default class Login extends Request {
 	private loginEl = document.querySelector("#username") as HTMLInputElement;
 	private passwordEl = document.querySelector("#password") as HTMLInputElement;
@@ -27,14 +27,14 @@ export default class Login extends Request {
 			.catch(e => Promise.reject(swal.fire("Error", e.toString(), "error")))
 			.then(({ success, reason }) => {
 				if (!success) {
-					const [title, msg] = TranslateError(reason as Err);
+					const [title, msg] = translateError(reason as Err);
 					swal.fire(title, msg || '', "error")
 				} else {
 					this.me()
 						.catch(e => Promise.reject(swal.fire('Error', e, 'error')))
 						.then(({ success, data, reason }) => {
 							if (!success) {
-								const [title, msg] = TranslateError(reason as Err);
+								const [title, msg] = translateError(reason as Err);
 								swal.fire(title, msg || '', "error")
 							} 
 							if (data.user_type == 'user') {

@@ -1,0 +1,22 @@
+<table class="table table-stripped display" id="resets-table">
+	<thead>
+		<th>Giriş</th>
+		<th>Çıkış</th>
+		<th>Kasa</th>
+		<th>Tarih</th>
+	</thead>
+	<tbody>
+		{{#if success}}
+			{{#each data}}
+				<tr class="font-weight-bold" style="font-size:1.0rem">
+					<td>{{sent}}</td>
+					<td>{{received}}</td>
+					<td>{{- sent received}}</td>
+					<td>{{timefmt op_time}}</td>
+				</tr>
+			{{/each}}
+		{{else}}
+			Bu aya ait resetlemeler bulunamadı.
+		{{/if}}
+	</tbody>
+</table>

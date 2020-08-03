@@ -6,8 +6,8 @@ import Handlebars from "handlebars"
 import { Request, User, TableGroup, Wallet, Err } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui"
-import TranslateError from "./errMessagesTR";
-import { loadTpl } from "../utils";
+import translateError from "./errMessagesTR";
+import { loadTpl, handlebarsHelpers } from "../utils";
 
 interface BreadCrumb {
 	id: number,
@@ -15,16 +15,7 @@ interface BreadCrumb {
 	name: string
 }
 
-Handlebars.registerHelper('lockCard', function(numLockCards: number[], numCards: number, opt) {
-	for (let i = 0; i < numLockCards.length; i++) {
-		if (numLockCards[i] == numCards) {
-			//@ts-ignore
-			return opt.fn(this);
-		}
-	}
-	//@ts-ignore
-	return opt.inverse(this);
-})
+Handlebars.registerHelper(handlebarsHelpers)
 
 class Users extends Request {
 	myData?: User;
@@ -105,7 +96,7 @@ class Users extends Request {
 			//@ts-ignore
 			.then(({ success, reason, data }) => {
 				if (!success) {
-					const [title, msg] = TranslateError(reason as Err);
+					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || '' }));
 				}
 				console.log(data);
@@ -142,7 +133,7 @@ class Users extends Request {
 			.catch(e => Promise.reject(IziToast.error({ title: 'İnternet Hatası', message: e })))
 			.then(({ success, reason, data }) => {
 				if (!success) {
-					const [title, msg] = TranslateError(reason as Err);
+					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || '' }));
 				}
 				return Promise.all([that.cardTemplate, data]);
@@ -162,7 +153,7 @@ class Users extends Request {
 			//@ts-ignore
 			.then(({ success, reason, data }) => {
 				if (!success) {
-					const [title, msg] = TranslateError(reason as Err);
+					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || '' }));
 				}
 				that.lockCardData.push(cardID);
@@ -177,7 +168,7 @@ class Users extends Request {
 			//@ts-ignore
 			.then(({ success, reason, data }) => {
 				if (!success) {
-					const [title, msg] = TranslateError(reason as Err);
+					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || '' }));
 				}
 				delete that.lockCardData[that.lockCardData.indexOf(cardID)];
@@ -190,7 +181,7 @@ class Users extends Request {
 			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e })))
 			.then(({ success, data, reason }) => {
 				if (!success) {
-					const [title, msg] = TranslateError(reason as Err);
+					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || '' }));
 				}
 				return this.tableGroups = data.table_groups;
@@ -201,7 +192,7 @@ class Users extends Request {
 			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: 'internet sorunu' + e })))
 			.then(({ success, data, reason }) => {
 				if (!success) {
-					const [title, msg] = TranslateError(reason as Err);
+					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || '' }));
 				}
 				if (data.user_type == 'user')

@@ -1,5 +1,5 @@
 import { Err } from "tombalaApi";
-export default function TranslateError(err: Err): [string, string | undefined] {
+export default function translateError(err: Err): [string, string | undefined] {
 	if (typeof err === 'string') {
 		switch (err) {
 			case 'NotFound':

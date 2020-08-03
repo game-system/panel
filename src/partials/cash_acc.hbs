@@ -23,6 +23,13 @@
 			<div>Bonus: {{bonus_expense}}</div>
 		</div>
 	</div>
+	<div class="card col">
+		<div class="card-title ">HESAP SIFIRLA</div>
+		<div class="card-body">
+			<div id="sifirlabtn" class="btn btn-danger">SIFIRLA</div>
+			<div>Son Sıfırlama Tarihi: {{timefmt data.data.last_reset_time}}</div>
+		</div>
+	</div>
 </div>
 <table class="table table-stripped display" id="accounting-table">
 	<thead>
@@ -36,7 +43,7 @@
 	<tbody>
 		{{#with data}}
 			{{#if success}}
-				{{#each data}}
+				{{#each data.all}}
 					{{#with_ctx @root.uname}}
 						<tr class="font-weight-bold" style="font-size:1.0rem">
 							<td>{{uid}}</td>

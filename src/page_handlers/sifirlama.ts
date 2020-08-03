@@ -3,7 +3,7 @@ import { default as cfg, Config } from "./config";
 import "izitoast/dist/css/iziToast.min.css";
 import "@coreui/icons/css/all.min.css";
 import "../css/users.css";
-import { Request, User, Wallet, Err, CashAcc } from "tombalaApi";
+import { Request, User, Wallet, Err } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui";
 import translateError from "./errMessagesTR";
@@ -14,8 +14,7 @@ import "simple-datatables/dist/style.css";
 import swal, { SweetAlertOptions } from "sweetalert2"
 registerHelper(handlebarsHelpers);
 interface Windw extends Window {
-	accPlace: HTMLElement;
-	sifirlabtn: HTMLElement;
+	resetsPlace: HTMLElement;
 }
 const windw: Windw = window as any;
 
@@ -23,7 +22,7 @@ class Users extends Request {
 	myData?: User;
 	wallets: Wallet[] = [];
 	creditTemplate = loadTpl(require("../partials/credit.hbs"));
-	accTpl = loadTpl(require("../partials/cash_acc.hbs"));
+	accTpl = loadTpl(require("../partials/resets.hbs"));
 	modal: any;
 	modalBody?: HTMLElement;
 	cfg: Config = {} as Config;
@@ -40,7 +39,7 @@ class Users extends Request {
 				.then(d => (that.myData = d))
 				.then(() => that.updateUiMydata());
 			that.initWallet();
-			this.render_accounting();
+			this.render_resets();
 		});
 	}
 	initWallet() {
@@ -86,61 +85,16 @@ class Users extends Request {
 				return data;
 			});
 	}
-	async render_accounting() {
-		const date = new Date();
+	async render_resets() {
 		Promise.all([
-			this.getCashAccounting(date.getUTCFullYear(), date.getUTCMonth() + 1),
+			this.resetAccountingList(),
 			this.accTpl
 		])
 			.then(([d, tpl]) => {
-				const income =
-					d.data?.since_reset.reduce((o, c) => {
-						const newAmount = o + c.amount;
-						return c.from === this.myData?.id && !c.is_bonus ? newAmount : o;
-					}, 0) || 0;
-				const expense =
-					d.data?.since_reset.reduce((o, c) => {
-						const newAmount = o + c.amount;
-						return c.from !== this.myData?.id && !c.is_bonus ? newAmount : o;
-					}, 0) || 0;
-				const bonus_income =
-					d.data?.since_reset.reduce((o, c) => {
-						const newAmount = o + c.amount;
-						return c.from === this.myData?.id && c.is_bonus ? newAmount : o;
-					}, 0) || 0;
-				const bonus_expense =
-					d.data?.since_reset.reduce((o, c) => {
-						const newAmount = o + c.amount;
-						return c.from !== this.myData?.id && c.is_bonus ? newAmount : o;
-					}, 0) || 0;
-				return (windw.accPlace.innerHTML = tpl({
-					expense,
-					income,
-					profit: income - expense,
-					bonus_income,
-					bonus_expense,
-					bonus_profit: bonus_income - bonus_expense,
-					uname: this.myData?.id,
-					data: d
-				}));
+				windw.resetsPlace.innerHTML = tpl(d)
 			})
 			.then(() => {
-				new DataTable("#accounting-table");
-				windw.sifirlabtn.addEventListener("click", () => {
-					const options: SweetAlertOptions = {
-						title: "SIFIRLAMA PAROLASI",
-						input: "password",
-						showLoaderOnConfirm:true,
-						confirmButtonText:"SIFIRLA",
-						preConfirm:async (v)=>{
-							return this.resetAccounting(v)
-						}
-					}
-					swal.fire(options).then(d=>{
-						const {success,reason} = d.value;
-						success?swal.fire("Başarılı","","success"):swal.fire("Hata",translateError(reason).filter(d=>d).join(","),"error")
-					})
-				});
+				new DataTable("#resets-table");
 			});
 	}
 }

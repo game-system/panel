@@ -7,7 +7,7 @@ import Handlebars from "handlebars";
 import { Request, User, Wallet, Err } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui";
-import TranslateError from "./errMessagesTR";
+import translateError from "./errMessagesTR";
 import {DataTable} from "simple-datatables"
 import "simple-datatables/dist/style.css"
 
@@ -96,7 +96,7 @@ class Users extends Request {
 					} as User)
 					.then(({ data, reason, success }) => {
 						if (!success) {
-							const [title, msg] = TranslateError(reason as Err);
+							const [title, msg] = translateError(reason as Err);
 							return Promise.reject(
 								IziToast.error({ title, message: msg || "" })
 							);
@@ -163,7 +163,7 @@ class Users extends Request {
 			)
 			.then(({ success, reason, data }) => {
 				if (!success) {
-					const [title, msg] = TranslateError(reason as Err);
+					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || "" }));
 				}
 				return Promise.all([this.moneyTransferTpl, data]);
@@ -195,7 +195,7 @@ class Users extends Request {
 			)
 			.then(({ success, reason, data }) => {
 				if (!success) {
-					const [title, msg] = TranslateError(reason as Err);
+					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || "" }));
 				}
 				const index = that.wallets.reduce(
@@ -248,7 +248,7 @@ class Users extends Request {
 						)
 						.then(({ success, reason }) => {
 							if (!success) {
-								const [title, msg] = TranslateError(reason as Err);
+								const [title, msg] = translateError(reason as Err);
 								return Promise.reject(
 									IziToast.error({ title, message: msg || "" })
 								);
@@ -282,7 +282,7 @@ class Users extends Request {
 				delel?.addEventListener("click", () => {
 					this.deleteChild(user, true).then(({ success, reason }) => {
 						if (!success) {
-							const [title, msg] = TranslateError(reason as Err);
+							const [title, msg] = translateError(reason as Err);
 							return Promise.reject(
 								IziToast.error({ title, message: msg || "" })
 							);
@@ -297,7 +297,7 @@ class Users extends Request {
 				enableEl?.addEventListener("click", () => {
 					this.enableChild(user, true).then(({ success, reason }) => {
 						if (!success) {
-							const [title, msg] = TranslateError(reason as Err);
+							const [title, msg] = translateError(reason as Err);
 							return Promise.reject(
 								IziToast.error({ title, message: msg || "" })
 							);
@@ -317,7 +317,7 @@ class Users extends Request {
 				disableEl?.addEventListener("click", () => {
 					this.disableChild(user, true).then(({ success, reason }) => {
 						if (!success) {
-							const [title, msg] = TranslateError(reason as Err);
+							const [title, msg] = translateError(reason as Err);
 							return Promise.reject(
 								IziToast.error({ title, message: msg || "" })
 							);
@@ -348,7 +348,7 @@ class Users extends Request {
 			)
 			.then(({ success, data, reason }) => {
 				if (!success) {
-					const [title, msg] = TranslateError(reason as Err);
+					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || "" }));
 				}
 				if (data.user_type == "user") location.pathname = "/index.html";
@@ -364,7 +364,7 @@ class Users extends Request {
 			)
 			.then(({ success, data, reason }) => {
 				if (!success) {
-					const [title, msg] = TranslateError(reason as Err);
+					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || "" }));
 				}
 				return data;

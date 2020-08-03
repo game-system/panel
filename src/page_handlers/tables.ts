@@ -1,28 +1,15 @@
-import IziToast from "izitoast";
-import { default as cfg, Config } from "./config";
-import "izitoast/dist/css/iziToast.css";
-import "@coreui/icons/css/all.min.css";
-import "../css/tables.css";
-import { Request, User, TableGroup, Table, Wallet, Err } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui";
-import TranslateError from "./errMessagesTR";
-import { loadTpl } from "../utils";
-import { registerHelper } from "handlebars"
-registerHelper("translate", function(data) {
-	switch (data) {
-		case "SameCardSameRoomMultiBuy":
-			return "api";
-		case "SameCardMultiRoomBuy":
-			return "çoklu oda";
-		case "UserBuysFromSingleTable":
-			return "tek masadan";
-		case "CardCanBeBoughtFromSingleTable":
-			return "kart tek masadan";
-		default:
-			return data;
-	}
-});
+import "@coreui/icons/css/all.min.css";
+import { registerHelper } from "handlebars";
+import IziToast from "izitoast";
+import "izitoast/dist/css/iziToast.css";
+import { Err, Request, Table, TableGroup, User, Wallet } from "tombalaApi";
+import "../css/tables.css";
+import { loadTpl, handlebarsHelpers } from "../utils";
+import { Config, default as cfg } from "./config";
+import translateError from "./errMessagesTR";
+registerHelper(handlebarsHelpers);
 interface GroupType {
 	name: string;
 	type:
@@ -162,7 +149,7 @@ class TableGroupsAndTables extends Request {
 					)
 					.then(({ data, reason, success }) => {
 						if (!success) {
-							const [title, msg] = TranslateError(reason as Err);
+							const [title, msg] = translateError(reason as Err);
 							return Promise.reject(
 								IziToast.error({ title, message: msg || "" })
 							);
@@ -241,7 +228,7 @@ class TableGroupsAndTables extends Request {
 						)
 						.then(({ data, reason, success }) => {
 							if (!success) {
-								const [title, msg] = TranslateError(reason as Err);
+								const [title, msg] = translateError(reason as Err);
 								return Promise.reject(
 									IziToast.error({ title, message: msg || "" })
 								);
@@ -289,7 +276,7 @@ class TableGroupsAndTables extends Request {
 						)
 						.then(({ reason, success }) => {
 							if (!success) {
-								const [title, msg] = TranslateError(reason as Err);
+								const [title, msg] = translateError(reason as Err);
 								return Promise.reject(
 									IziToast.error({ title, message: msg || "" })
 								);
@@ -345,7 +332,7 @@ class TableGroupsAndTables extends Request {
 						)
 						.then(({ reason, success }) => {
 							if (!success) {
-								const [title, msg] = TranslateError(reason as Err);
+								const [title, msg] = translateError(reason as Err);
 								return Promise.reject(
 									IziToast.error({ title, message: msg || "" })
 								);
@@ -381,7 +368,7 @@ class TableGroupsAndTables extends Request {
 						)
 						.then(({ reason, success }) => {
 							if (!success) {
-								const [title, msg] = TranslateError(reason as Err);
+								const [title, msg] = translateError(reason as Err);
 								return Promise.reject(
 									IziToast.error({ title, message: msg || "" })
 								);
@@ -424,7 +411,7 @@ class TableGroupsAndTables extends Request {
 			.catch(e => Promise.reject(IziToast.error({ title: "Hata", message: e })))
 			.then(({ success, data, reason }) => {
 				if (!success) {
-					const [title, msg] = TranslateError(reason as Err);
+					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || "" }));
 				}
 				if (data.user_type == "user") location.pathname = "/index.html";
@@ -436,7 +423,7 @@ class TableGroupsAndTables extends Request {
 			.catch(e => Promise.reject(IziToast.error({ title: "Hata", message: e })))
 			.then(({ success, data, reason }) => {
 				if (!success) {
-					const [title, msg] = TranslateError(reason as Err);
+					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || "" }));
 				}
 				return data.table_groups;
