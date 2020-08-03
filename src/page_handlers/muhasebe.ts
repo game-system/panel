@@ -3,7 +3,7 @@ import { default as cfg, Config } from "./config";
 import "izitoast/dist/css/iziToast.min.css";
 import "@coreui/icons/css/all.min.css";
 import "../css/users.css";
-import { Request, User, Wallet, Err, CashAcc } from "tombalaApi";
+import { Request, User, Wallet, Err } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui";
 import translateError from "./errMessagesTR";
@@ -130,15 +130,15 @@ class Users extends Request {
 					const options: SweetAlertOptions = {
 						title: "SIFIRLAMA PAROLASI",
 						input: "password",
-						showLoaderOnConfirm:true,
-						confirmButtonText:"SIFIRLA",
-						preConfirm:async (v)=>{
+						showLoaderOnConfirm: true,
+						confirmButtonText: "SIFIRLA",
+						preConfirm: async (v) => {
 							return this.resetAccounting(v)
 						}
 					}
-					swal.fire(options).then(d=>{
-						const {success,reason} = d.value;
-						success?swal.fire("Başarılı","","success"):swal.fire("Hata",translateError(reason).filter(d=>d).join(","),"error")
+					swal.fire(options).then(d => {
+						const { success, reason } = d.value;
+						success ? swal.fire("Başarılı", "", "success").then(() => this.render_accounting()) : swal.fire("Hata", translateError(reason).filter(d => d).join(","), "error")
 					})
 				});
 			});

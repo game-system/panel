@@ -133,7 +133,8 @@ class Users extends Request {
 		that.usersTemplate
 			.then(t => {
 				return t({
-					children: that.myChildren
+					children: that.myChildren,
+					is_seller:that.myData?.user_type === "seller"
 				});
 			})
 			.then(tpl => {
