@@ -8,7 +8,7 @@ export async function loadTpl(
 	return compile(t);
 }
 export const handlebarsHelpers = {
-	with_ctx: function(myUid: string, render: any) {
+	with_ctx: function (myUid: string, render: any) {
 		//@ts-ignore
 		let o: CashAcc = this;
 		return render.fn(
@@ -17,18 +17,18 @@ export const handlebarsHelpers = {
 				: { credit: o.to_new_credit, uid: o.to, ctx: o, cls: "bg-success" }
 		);
 	},
-	timefmt: function(val: number) {
+	timefmt: function (val: number) {
 		function numFmt(n: number) {
 			return n < 10 ? "0" + n : "" + n;
 		}
 		const d = new Date(val * 1000);
 		const month = d.getMonth() + 1;
-		const day = d.getDay() + 1;
+		const day = d.getDate();
 		return `${d.getFullYear()}/${numFmt(month)}/${numFmt(day)} ${numFmt(
 			d.getHours()
 		)}:${numFmt(d.getMinutes())}`;
 	},
-	lockCard: function(numLockCards: number[], numCards: number, opt:any) {
+	lockCard: function (numLockCards: number[], numCards: number, opt: any) {
 		for (let i = 0; i < numLockCards.length; i++) {
 			if (numLockCards[i] == numCards) {
 				//@ts-ignore
@@ -38,7 +38,7 @@ export const handlebarsHelpers = {
 		//@ts-ignore
 		return opt.inverse(this);
 	},
-	translate: function(data: string) {
+	translate: function (data: string) {
 		switch (data) {
 			case "SameCardSameRoomMultiBuy":
 				return "api";
@@ -52,18 +52,24 @@ export const handlebarsHelpers = {
 				return data;
 		}
 	},
-	neq:function(a:any,b:any,opt:any){
-		return a!=b?opt.fn(this):opt.inverse(this)
+	neq: function (a: any, b: any, opt: any) {
+		return a != b ? opt.fn(this) : opt.inverse(this)
 	},
-	couponCredit:function(cpnLog:CouponHistory){
-		return cpnLog.new_credit?cpnLog.new_credit:cpnLog.buy_time_credit
+	couponCredit: function (cpnLog: CouponHistory) {
+		return cpnLog.new_credit ? cpnLog.new_credit : cpnLog.buy_time_credit
+	},
+	toFixed: function (n: number) {
+		return n.toFixed(2);
+	},
+	autofocus: function (n: number) {
+		return n == 1 ? 'autofocus' : '';
 	}
 };
 //@ts-ignore
-handlebarsHelpers["-"] = function(a: number, b: number) {
+handlebarsHelpers["-"] = function (a: number, b: number) {
 	return a - b;
 };
 //@ts-ignore
-handlebarsHelpers["+"] = function(a: number, b: number) {
-	return a - b;
+handlebarsHelpers["+"] = function (a: number, b: number) {
+	return a + b;
 };
