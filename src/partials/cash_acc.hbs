@@ -2,25 +2,25 @@
 	<div class="card col">
 		<div class="card-title">KASA</div>
 		<div class="card-body">
-			<div> Kredi : {{profit}}</div>
+			<div> Kredi : {{toFixed profit}}</div>
 			<div>
-				Bonus : {{bonus_profit}}
+				Bonus : {{toFixed bonus_profit}}
 			</div>
 		</div>
 	</div>
 	<div class="card col text-success">
 		<div class="card-title">GİRİŞ</div>
 		<div class="card-body ">
-			<div>Kredi: {{income}}</div>
-			<div>Bonus: {{bonus_income}}</div>
+			<div>Kredi: {{toFixed income}}</div>
+			<div>Bonus: {{toFixed bonus_income}}</div>
 			
 		</div>
 	</div>
 	<div class="card col text-danger">
 		<div class="card-title ">ÇIKIŞ</div>
 		<div class="card-body">
-			<div>Kredi: {{expense}}</div>
-			<div>Bonus: {{bonus_expense}}</div>
+			<div>Kredi: {{toFixed expense}}</div>
+			<div>Bonus: {{toFixed bonus_expense}}</div>
 		</div>
 	</div>
 	<div class="card col">
@@ -47,8 +47,8 @@
 					{{#with_ctx @root.uname}}
 						<tr class="font-weight-bold" style="font-size:1.0rem">
 							<td>{{uid}}</td>
-							<td class="{{cls}}">{{ctx.amount}}</td>
-							<td>{{credit}}</td>
+							<td class="{{cls}}">{{toFixed ctx.amount}}</td>
+							<td>{{toFixed credit}}</td>
 							<td>{{ctx.game_name}}</td>
 							<td>{{timefmt ctx.time}}</td>
 							<td><input type="checkbox" disabled="disabled" {{#if ctx.is_bonus}} checked="checked"{{/if}}> </td>
