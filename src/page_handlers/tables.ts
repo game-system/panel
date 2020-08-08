@@ -9,6 +9,7 @@ import "../css/tables.css";
 import { loadTpl, handlebarsHelpers } from "../utils";
 import { Config, default as cfg } from "./config";
 import translateError from "./errMessagesTR";
+import Socket from "./socket";
 registerHelper(handlebarsHelpers);
 interface GroupType {
 	name: string;
@@ -49,6 +50,7 @@ class TableGroupsAndTables extends Request {
 		super(c);
 		this.cfg = c;
 		const that = this;
+		const socket = new Socket(c);
 		window.addEventListener("DOMContentLoaded", () => {
 			const mdlEl = document.getElementById("actionModal") || undefined;
 			that.modal = new Modal(mdlEl, {});
@@ -105,6 +107,7 @@ class TableGroupsAndTables extends Request {
 			});
 	}
 	updateUserCreditUI() {
+		if (this.myData?.user_type == 'seller' || this.myData?.user_type == 'user') return;
 		const el: HTMLElement | null = document.querySelector("#credits") || null;
 		this.creditTemplate
 			.then(t => t({ wallets: this.wallets }))
