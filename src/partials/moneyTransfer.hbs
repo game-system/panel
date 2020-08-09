@@ -8,8 +8,8 @@
   {{#each data}}
   <div class="modal-body">
     <div class='count-status'>
-      <span>kredi: <p class='font-weight-bold'>{{balance}}</p></span>
-      <span>bonus kredi: <p class='font-weight-bold'>{{bonus_balance}}</p></span>
+      <span>kredi: <p class='font-weight-bold'>{{toFixed balance}}</p></span>
+      <span>bonus kredi: <p class='font-weight-bold'>{{toFixed bonus_balance}}</p></span>
       <span>oyun adı: <p class='font-weight-bold'>{{game_name}}</p></span>
     </div>
     <form id='form_{{game_id}}'>
@@ -17,7 +17,7 @@
         <div class="input-group-prepend">
           <span class="input-group-text">TL</span>
         </div>
-        <input type="number" class="form-control">
+        <input type="number" {{autofocus game_id}} class="form-control"  />
       </div>
       <div class='d-flex flex-row justify-content-start'>
         <div class='d-flex flex-row justify-content-start align-items-center'>

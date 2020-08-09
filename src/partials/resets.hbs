@@ -6,11 +6,11 @@
 		<th>Tarih</th>
 	</thead>
 	<tbody>
-		{{#if success}}
+		{{#if success}}s
 			{{#each data}}
 				<tr class="font-weight-bold" style="font-size:1.0rem">
-					<td>{{sent}}</td>
-					<td>{{received}}</td>
+					<td>{{toFixed sent}}</td>
+					<td>{{toFixed received}}</td>
 					<td>{{- sent received}}</td>
 					<td>{{timefmt op_time}}</td>
 				</tr>

@@ -12,6 +12,7 @@ import { DataTable } from "simple-datatables";
 import "simple-datatables/dist/style.css";
 import { loadTpl, handlebarsHelpers } from "../utils";
 import swal from "sweetalert2";
+import Socket from "./socket";
 registerHelper(handlebarsHelpers);
 class Users extends Request {
 	myData?: User;
@@ -30,6 +31,7 @@ class Users extends Request {
 		super(c);
 		this.cfg = c;
 		const that = this;
+		const socket = new Socket(c);
 		window.addEventListener("DOMContentLoaded", () => {
 			const mdlEl = document.getElementById("actionModal") || undefined;
 			that.modal = new Modal(mdlEl, {});
@@ -123,6 +125,7 @@ class Users extends Request {
 	}
 	updateUserCreditUI() {
 		const el: HTMLElement | null = document.querySelector("#credits") || null;
+		if (this.myData?.user_type == 'seller' || this.myData?.user_type == 'user') return;
 		this.creditTemplate
 			.then(t => t({ wallets: this.wallets }))
 			.then(html => el && (el.innerHTML = html));
@@ -134,7 +137,7 @@ class Users extends Request {
 			.then(t => {
 				return t({
 					children: that.myChildren,
-					is_seller:that.myData?.user_type === "seller"
+					is_seller: that.myData?.user_type === "seller"
 				});
 			})
 			.then(tpl => {
@@ -281,10 +284,10 @@ class Users extends Request {
 			.then(([t, data]) => {
 				// this.modalBody && (this.modalBody.innerHTML = t({ admin, user, history: data.data }));
 				swal.fire({
-					title:"Kupon Geçmişi",
-					html:t({ admin, user, history: data.data }),
-					width:"100%",
-					onRender:()=>{
+					title: "Kupon Geçmişi",
+					html: t({ admin, user, history: data.data }),
+					width: "100%",
+					onRender: () => {
 						new DataTable("#cpn-history")
 					}
 				})

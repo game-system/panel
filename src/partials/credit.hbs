@@ -2,8 +2,8 @@
 	{{#each wallets}}
 		<div class='card  bg-dark d-flex flex flex-column align-item-center' style='padding-left:10px;'>
 			<div>{{game_name}} kredisi</div>
-			<div>Bonus: {{bonus_balance}}</div>
-			<div>kredi: {{balance}}</div>
+			<div>Bonus: {{toFixed bonus_balance}}</div>
+			<div>kredi: {{toFixed balance}}</div>
 		</div>
 	{{/each}}
 </div>
