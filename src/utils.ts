@@ -67,9 +67,9 @@ export const handlebarsHelpers = {
 };
 //@ts-ignore
 handlebarsHelpers["-"] = function (a: number, b: number) {
-	return a - b;
+	return (a - b).toFixed(2);
 };
 //@ts-ignore
 handlebarsHelpers["+"] = function (a: number, b: number) {
-	return a + b;
+	return (a + b).toFixed(2);
 };
