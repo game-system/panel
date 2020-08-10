@@ -142,7 +142,7 @@ class Users extends Request {
 			})
 			.then(tpl => {
 				el && (el.innerHTML = tpl);
-				new DataTable(el);
+				new DataTable(el, { perPage: 25 });
 			});
 	}
 	onMoneyClickHandler(uid: string) {
