@@ -15,6 +15,13 @@
 				<label for="addNewUserPass">Şifre:</label>
 				<input id="addNewUserPass" class="form-control" placeholder="Şifre" type="password">
 			</div>
+			{{#if note}}
+			<div class="form-group">
+				<label for="addNewUserPass">Not:</label></br>
+				<textarea id='addNewUserNote' class="form-control" rows="6" cols="60" name="text"
+					placeholder="Enter text"></textarea>
+			</div>
+			{{/if}}
 			<input class="d-none" type="submit">
 		</form>
 	</div>
