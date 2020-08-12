@@ -62,7 +62,7 @@ export const handlebarsHelpers = {
 		return n.toFixed(2);
 	},
 	autofocus: function (n: number) {
-		return n == 1 ? 'autofocus' : '';
+		return n == 1 ? 'autofocus' : n;
 	}
 };
 //@ts-ignore
