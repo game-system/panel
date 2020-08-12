@@ -1,41 +1,28 @@
-<div class="modal-content">
-  <div class="modal-header">
-    <h5 class="modal-title">Para Transferi: {{uid}}</h5>
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
+{{#each data}}
+<div class="modal-body">
+  <div class='count-status'>
+    <span>kredi: <p class='font-weight-bold'>{{toFixed balance}}</p></span>
+    <span>bonus kredi: <p class='font-weight-bold'>{{toFixed bonus_balance}}</p></span>
+    <span>oyun adı: <p class='font-weight-bold'>{{game_name}}</p></span>
   </div>
-  {{#each data}}
-  <div class="modal-body">
-    <div class='count-status'>
-      <span>kredi: <p class='font-weight-bold'>{{toFixed balance}}</p></span>
-      <span>bonus kredi: <p class='font-weight-bold'>{{toFixed bonus_balance}}</p></span>
-      <span>oyun adı: <p class='font-weight-bold'>{{game_name}}</p></span>
+  <form id='form_{{game_id}}'>
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+        <span class="input-group-text">TL</span>
+      </div>
+      <input type="number" id="{{autofocus game_id}}" tabindex="{{game_id}}" class="form-control" />
     </div>
-    <form id='form_{{game_id}}'>
-      <div class="input-group mb-3">
-        <div class="input-group-prepend">
-          <span class="input-group-text">TL</span>
-        </div>
-        <input type="number" {{autofocus game_id}} class="form-control"  />
+    <div class='d-flex flex-row justify-content-start'>
+      <div class='d-flex flex-row justify-content-start align-items-center'>
+        <input type="checkbox" /><label style='width:120px;margin:0;'>Bonus Kredi</label>
       </div>
-      <div class='d-flex flex-row justify-content-start'>
-        <div class='d-flex flex-row justify-content-start align-items-center'>
-          <input type="checkbox" /><label style='width:120px;margin:0;'>Bonus Kredi</label>
-        </div>
-        <div class='button-area'>
-          <button id='pushMoney' type="submit" onclick='ctx.updtCredit("{{@root.uid}}",{{game_id}},false)'
-            class="btn btn-primary" data-dismiss="modal">Gönder</button>
-          <button id='pullMoney' type="button" onclick='ctx.updtCredit("{{@root.uid}}",{{game_id}},true)'
-            class="btn btn-light" data-dismiss="modal">Çek</button>
-        </div>
+      <div class='button-area'>
+        <button type="submit" onclick='ctx.updtCredit("{{@root.uid}}",{{game_id}},false)' class="btn btn-primary"
+          data-dismiss="modal">Gönder</button>
+        <button type="button" onclick='ctx.updtCredit("{{@root.uid}}",{{game_id}},true)' class="btn btn-light"
+          data-dismiss="modal">Çek</button>
       </div>
-
-
-    </form>
-  </div>
-  {{/each}}
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
-  </div>
+    </div>
+  </form>
 </div>
+{{/each}}

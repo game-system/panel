@@ -1,15 +1,18 @@
 <tr>
-	<td>Kullanıcı Adı</td>
-	<td>Tarih</td>
-	<td>Engelli</td>
-	<td>İşlemler</td>
+	<td><b>Kullanıcı Adı</b></td>
+	<td><b>Tarih</b></td>
+	<td><b>Engelli</b></td>
+	<td><b>İşlemler</b></td>
 </tr>
 {{#each children}}
 	<tr>
-		<td>{{id}}</td>
-		<td>{{#if date_str}}{{date_str}} {{else}} {{created_at}}{{/if}}</td>
+		<td><b>{{id}}</b></td>
+		<td><b>{{#if date_str}}{{date_str}} {{else}} {{created_at}}{{/if}}</b></td>
 		<td><input type="checkbox" {{#if is_disabled}} checked {{/if}} disabled></td>
 		<td class="font-weight-bold">
+			{{#if note}} 
+			<div onclick="ctx.onNoteClickHandler('{{id}},{{note}}')" class="btn btn-success p-1">Not</div>
+			{{/if}}
 			<div onclick="ctx.onMoneyClickHandler('{{id}}')" class="btn btn-success p-1"><span style="font-size:1.3rem" class="cil-plus btn-icon p-1"></span></div>
 			{{#if @root.is_seller}}
 			<div onclick="ctx.onUserCouponHistoryClick('{{id}}')" class="btn btn-primary p-1">Geçmiş</div>
