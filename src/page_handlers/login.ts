@@ -11,6 +11,8 @@ export default class Login extends Request {
 	constructor(c: Config) {
 		super(c)
 		const that = this;
+		sessionStorage.clear();
+		localStorage.clear();
 		this.listenInputChanges()
 		this.form.onsubmit = function (e) {
 			e.preventDefault();
