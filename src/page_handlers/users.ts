@@ -74,60 +74,51 @@ class Users extends Request {
 	}
 	addNewUserUi() {
 		const that = this;
-		const btn = document.getElementById("new_user_btn");
-		function handleSubmit(el: HTMLFormElement | null | undefined) {
-			return (e: Event) => {
-				e.preventDefault();
-				const id = el?.querySelector(
-					"input[type='text']"
-				) as HTMLInputElement | null;
-				const pass = el?.querySelector(
-					"input[type='password']"
-				) as HTMLInputElement | null;
-				const note = el?.querySelector('textarea') as HTMLInputElement | null;
-				if (!id?.value) return id?.focus();
-				if (!pass?.value) return pass?.focus();
-				if (!note?.value) return note?.focus();
-				that
-					.addChild({
-						id: id?.value || "",
-						password: pass?.value || "",
-						note: note?.value || '',
-					} as User)
-					.then(({ data, reason, success }) => {
-						if (!success) {
-							const [title, msg] = translateError(reason as Err);
-							return Promise.reject(
-								IziToast.error({ title, message: msg || "" })
-							);
-						}
-						data.date_str = new Date(data.created_at * 1000)
-							.toISOString()
-							.split("T")[0];
-						that.myChildren.unshift(data);
-						that.updateChildrenUI();
-						return true;
-					})
-					.then(() => {
-						IziToast.success({ title: "Başarılı", message: "İşlem Başarılı" });
-						that.modal.hide();
-					});
-			};
-		}
-		btn?.addEventListener("click", () => {
+		document.querySelector("#new_user_btn")?.addEventListener("click", () => {
 			const userType = sessionStorage.getItem('user_type');
 			this.addUserTemplate
 				.then(d => d({ note: (userType != 'seller' ? true : false) }))
 				.then(d => {
 					that.modalBody && (that.modalBody.innerHTML = d);
-					const form = that.modalBody?.querySelector("form");
-					that.modalBody
-						?.querySelector("#submitNewAddUser")
-						?.addEventListener("click", handleSubmit(form));
-					form?.addEventListener("submit", handleSubmit(form));
+					const form: HTMLFormElement | null | undefined = that.modalBody?.querySelector("form");
+					that.modalBody?.querySelector("#submitNewAddUser")?.addEventListener("click", () => this.handleSumbit(form));
+					form?.addEventListener("keypress", (e) => {
+						if (e.keyCode == 13 || e.keyCode == 10) {
+							this.handleSumbit(form)
+						}
+					});
 					that.modal.toggle();
 				});
 		});
+	}
+	private handleSumbit(el: HTMLFormElement | null | undefined) {
+		console.log(el);
+		const that = this;
+		const id = el?.querySelector("input[type='text']") as HTMLInputElement | null;
+		const pass = el?.querySelector("input[type='password']") as HTMLInputElement | null;
+		const note = el?.querySelector('textarea') as HTMLInputElement | null;
+		if (!id?.value) return id?.focus();
+		if (!pass?.value) return pass?.focus();
+		if (note && !note?.value) return note?.focus();
+		that.addChild({
+			id: id?.value || "",
+			password: pass?.value || "",
+			note: note?.value || '',
+		} as User)
+			.then(({ data, reason, success }) => {
+				if (!success) {
+					const [title, msg] = translateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || "" }));
+				}
+				data.date_str = new Date(data.created_at * 1000).toISOString().split("T")[0];
+				that.myChildren.unshift(data);
+				that.updateChildrenUI();
+				return true;
+			})
+			.then(() => {
+				IziToast.success({ title: "Başarılı", message: "İşlem Başarılı" });
+				that.modal.hide();
+			});
 	}
 	updateUserCreditUI() {
 		const el: HTMLElement | null = document.querySelector("#credits") || null;
@@ -142,7 +133,7 @@ class Users extends Request {
 		that.usersTemplate
 			.then(t => {
 				return t({
-					children: that.myChildren.sort(),
+					children: that.myChildren.sort((a, b) => (a.id < b.id) ? -1 : (a.id > b.id) ? 1 : 0),
 					is_seller: that.myData?.user_type === "seller"
 				});
 			})
@@ -172,72 +163,66 @@ class Users extends Request {
 				return Promise.all([this.moneyTransferTpl, data]);
 			})
 			.then(([t, data]) => {
-
 				swal.fire({
 					title: `<strong>Para Transferi: ${uid}</strong>`,
 					html: t({ uid, data }),
 					showCloseButton: false,
 					showCancelButton: true,
-					showConfirmButton:false,
+					showConfirmButton: false,
 					focusConfirm: false,
 					cancelButtonText: 'Kapat',
+				});
+				const forms = [].slice.call(document.querySelector('#tableForms')?.querySelectorAll('form')) as HTMLFormElement[];
+				forms.forEach((e, i) => {
+					e.addEventListener('keypress', (el) => {
+						if (el.keyCode == 13 || el.keyCode == 10) {
+							this.updtCredit(uid, data[i].game_id, false);
+							el.preventDefault();
+						}
+					})
 				})
-
 			});
 	}
 	updtCredit(uid: string, gameID: number, isReceive: boolean) {
 		const that = this;
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
-		const elems = [].slice.call(
-			document.querySelector("#form_" + gameID)?.querySelectorAll("input")
-		) as HTMLInputElement[];
+		const elems = [].slice.call(document.querySelector("#form_" + gameID)?.querySelectorAll("input")) as HTMLInputElement[];
 		if (!elems || !elems.length || elems.length < 2) return;
 		let credit = parseFloat(elems[0].value);
-
 		this.updateCredit(
 			user,
 			isReceive ? Math.abs(credit) * -1 : credit,
 			gameID,
 			elems[1].checked
 		)
-			.catch(() =>
-				Promise.reject(
-					IziToast.error({ title: "Hata", message: "İşlem başarısız" })
-				)
-			)
+			.catch(() => Promise.reject(IziToast.error({ title: "Hata", message: "İşlem başarısız" })))
 			.then(({ success, reason }) => {
 				if (!success) {
 					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || "" }));
 				}
-				const index = that.wallets.reduce(
-					(stt, curr, i) => (curr.game_id == gameID ? i : stt),
-					-1
-				);
+				const index = that.wallets.reduce((stt, curr, i) => (curr.game_id == gameID ? i : stt), -1);
 				if (index === -1) return Promise.reject("");
-				that.wallets[index][
-					elems[1].checked ? "bonus_balance" : "balance"
-				] -= isReceive ? Math.abs(credit) * -1 : credit;
+				that.wallets[index][elems[1].checked ? "bonus_balance" : "balance"] -= isReceive ? Math.abs(credit) * -1 : credit;
 				that.updateUserCreditUI();
-
 				return Promise.resolve("")
 			});
-
+		swal.close();
 	}
 	onNoteClickHandler(uid: string, note: string) {
 		this.noteTemplate
-		.then(t=>{
-			swal.fire({
-				title: `<strong>Kullanıcı: ${uid}</strong>`,
-				html: t({ uid, note }),
-				showCloseButton: false,
-				showConfirmButton:false,
-				showCancelButton: true,
-				focusConfirm: false,
-				cancelButtonText: 'Kapat',
-			})
+			.then(t => {
+				swal.fire({
+					title: `<strong>Kullanıcı: ${uid}</strong>`,
+					html: t({ uid, note }),
+					showCloseButton: false,
+					showConfirmButton: false,
+					showCancelButton: true,
+					focusConfirm: false,
+					cancelButtonText: 'Kapat',
+				})
 
-		})
+			})
 	}
 	updateNote(id: string) {
 		const noteElem: HTMLInputElement | null = document.querySelector('#user-note');
@@ -297,10 +282,8 @@ class Users extends Request {
 					if (!userInfoElems) return;
 					if (userInfoElems[0]?.value) userInfo.email = userInfoElems[0].value;
 					if (userInfoElems[1]?.value) userInfo.phone = userInfoElems[1].value;
-					if (userInfoElems[2]?.value)
-						userInfo.password = userInfoElems[2].value;
-					if (userInfoElems[3]?.value)
-						userInfo.acc_reset_passwd = userInfoElems[3].value;
+					if (userInfoElems[2]?.value) userInfo.password = userInfoElems[2].value;
+					if (userInfoElems[3]?.value) userInfo.acc_reset_passwd = userInfoElems[3].value;
 					this.updateProfile(user, userInfo)
 						.catch(() =>
 							Promise.reject(
@@ -432,7 +415,8 @@ class Users extends Request {
 			.then(({ success, data, reason }) => {
 				if (!success) {
 					const [title, msg] = translateError(reason as Err);
-					return Promise.reject(IziToast.error({ title, message: msg || "" }));
+					IziToast.error({ title, message: msg || "" });
+					Promise.reject(location.pathname = '/index.html');
 				}
 				if (data.user_type == "user") location.pathname = "/index.html";
 				return data;
