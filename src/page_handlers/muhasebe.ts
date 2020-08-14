@@ -37,12 +37,9 @@ class Users extends Request {
 			const mdlEl = document.getElementById("actionModal") || undefined;
 			that.modal = new Modal(mdlEl, {});
 			that.modalBody = mdlEl?.querySelector(".modal-dialog") || undefined;
-			that
-				.getMyData()
-				.then(d => (that.myData = d))
-				.then(() => that.updateUiMydata());
+			that.getMyData().then(d => (that.myData = d)).then(() => that.updateUiMydata());
 			that.initWallet();
-			this.render_accounting();
+			that.render_accounting();
 		});
 	}
 	initWallet() {
@@ -84,7 +81,7 @@ class Users extends Request {
 				if (!success) {
 					const [title, msg] = translateError(reason as Err);
 					IziToast.error({ title, message: msg || "" });
-					Promise.reject(location.pathname='/index.html');
+					Promise.reject(location.pathname = '/index.html');
 				}
 				if (data.user_type == "user") location.pathname = "/index.html";
 				return data;
