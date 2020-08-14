@@ -18,6 +18,8 @@ class Users extends Request {
 	myData?: User;
 	wallets: Wallet[] = [];
 	myChildren: User[] = [];
+	addUserTemplate = loadTpl(require("../partials/addUserModal.hbs"));
+	noteTemplate = loadTpl(require("../partials/userNote.hbs"));
 	usersTemplate = loadTpl(require("../partials/usersTable.hbs"));
 	userDeleteTpl = loadTpl(require("../partials/deleteUser.hbs"));
 	creditTemplate = loadTpl(require("../partials/credit.hbs"));
@@ -82,12 +84,15 @@ class Users extends Request {
 				const pass = el?.querySelector(
 					"input[type='password']"
 				) as HTMLInputElement | null;
+				const note = el?.querySelector('textarea') as HTMLInputElement | null;
 				if (!id?.value) return id?.focus();
 				if (!pass?.value) return pass?.focus();
+				if (!note?.value) return note?.focus();
 				that
 					.addChild({
 						id: id?.value || "",
-						password: pass?.value || ""
+						password: pass?.value || "",
+						note: note?.value || '',
 					} as User)
 					.then(({ data, reason, success }) => {
 						if (!success) {
@@ -110,8 +115,9 @@ class Users extends Request {
 			};
 		}
 		btn?.addEventListener("click", () => {
-			fetch(require("../partials/addUserModal.hbs"))
-				.then(d => d.text())
+			const userType = sessionStorage.getItem('user_type');
+			this.addUserTemplate
+				.then(d => d({ note: (userType != 'seller' ? true : false) }))
 				.then(d => {
 					that.modalBody && (that.modalBody.innerHTML = d);
 					const form = that.modalBody?.querySelector("form");
@@ -136,13 +142,13 @@ class Users extends Request {
 		that.usersTemplate
 			.then(t => {
 				return t({
-					children: that.myChildren,
+					children: that.myChildren.sort(),
 					is_seller: that.myData?.user_type === "seller"
 				});
 			})
 			.then(tpl => {
 				el && (el.innerHTML = tpl);
-				new DataTable(el);
+				new DataTable(el, { perPageSelect: [10, 20, 50, 70, 100], perPage: 100 });
 			});
 	}
 	onMoneyClickHandler(uid: string) {
@@ -166,8 +172,17 @@ class Users extends Request {
 				return Promise.all([this.moneyTransferTpl, data]);
 			})
 			.then(([t, data]) => {
-				this.modalBody && (this.modalBody.innerHTML = t({ uid, data }));
-				this.modal.show();
+
+				swal.fire({
+					title: `<strong>Para Transferi: ${uid}</strong>`,
+					html: t({ uid, data }),
+					showCloseButton: false,
+					showCancelButton: true,
+					showConfirmButton:false,
+					focusConfirm: false,
+					cancelButtonText: 'Kapat',
+				})
+
 			});
 	}
 	updtCredit(uid: string, gameID: number, isReceive: boolean) {
@@ -208,6 +223,43 @@ class Users extends Request {
 				return Promise.resolve("")
 			});
 
+	}
+	onNoteClickHandler(uid: string, note: string) {
+		this.noteTemplate
+		.then(t=>{
+			swal.fire({
+				title: `<strong>Kullanıcı: ${uid}</strong>`,
+				html: t({ uid, note }),
+				showCloseButton: false,
+				showConfirmButton:false,
+				showCancelButton: true,
+				focusConfirm: false,
+				cancelButtonText: 'Kapat',
+			})
+
+		})
+	}
+	updateNote(id: string) {
+		const noteElem: HTMLInputElement | null = document.querySelector('#user-note');
+		const note = noteElem?.value;
+		this.updateProfile({ id } as User, { note })
+			.catch(() =>
+				Promise.reject(
+					IziToast.error({ title: "Hata", message: "İşlem başarısız" })
+				)
+			)
+			.then(({ success, reason }) => {
+				if (!success) {
+					const [title, msg] = translateError(reason as Err);
+					return Promise.reject(
+						IziToast.error({ title, message: msg || "" })
+					);
+				}
+				return IziToast.success({
+					title: "Başarılı",
+					message: "İşlem başarıyla gerçekleşti"
+				});
+			});
 	}
 	onUserEditClickHandler(uid: string) {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];

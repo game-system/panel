@@ -82,7 +82,8 @@ class Users extends Request {
 			.then(({ success, data, reason }) => {
 				if (!success) {
 					const [title, msg] = translateError(reason as Err);
-					return Promise.reject(IziToast.error({ title, message: msg || "" }));
+					IziToast.error({ title, message: msg || "" });
+					Promise.reject(location.pathname='/index.html');
 				}
 				if (data.user_type == "user") location.pathname = "/index.html";
 				return data;
