@@ -38,8 +38,7 @@ export default class Login extends Request {
 						.then(({ success, data, reason }) => {
 							if (!success) {
 								const [title, msg] = translateError(reason as Err);
-								swal.fire(title, msg || '', "error");
-								return {};
+								swal.fire(title, msg || '', "error")
 							}
 							if (data.user_type == 'user') {
 								return swal.fire('Giriş Başarısız', 'Bu sayfaya giriş yetkiniz yok', 'info');

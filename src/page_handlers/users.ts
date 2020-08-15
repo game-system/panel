@@ -40,7 +40,7 @@ class Users extends Request {
 			that.modalBody = mdlEl?.querySelector(".modal-dialog") || undefined;
 			that
 				.getMyData()
-				.then(d => (that.myData = d))
+				.then(d => that.myData = d)
 				.then(() => that.updateUiMydata())
 				.then(that.getMyChildren.bind(that))
 				.then(
@@ -416,7 +416,7 @@ class Users extends Request {
 				if (!success) {
 					const [title, msg] = translateError(reason as Err);
 					IziToast.error({ title, message: msg || "" });
-					Promise.reject(location.pathname = '/index.html');
+					return Promise.reject(setTimeout(() => location.pathname='index.html', 1000));
 				}
 				if (data.user_type == "user") location.pathname = "/index.html";
 				return data;
