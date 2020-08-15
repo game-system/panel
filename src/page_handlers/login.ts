@@ -27,11 +27,12 @@ export default class Login extends Request {
 	private loginUser() {
 		this.login(this.uname, this.password)
 			.catch(e => Promise.reject(swal.fire("Error", e.toString(), "error")))
-			.then(({ success, reason }) => {
-				if (!success) {
+			.then(({ success, reason, sock_token }) => {
+				if (!success || !sock_token) {
 					const [title, msg] = translateError(reason as Err);
 					swal.fire(title, msg || '', "error")
 				} else {
+					sessionStorage.setItem('sock_token', sock_token);
 					this.me()
 						.catch(e => Promise.reject(swal.fire('Error', e, 'error')))
 						.then(({ success, data, reason }) => {
@@ -42,9 +43,11 @@ export default class Login extends Request {
 							if (data.user_type == 'user') {
 								return swal.fire('Giriş Başarısız', 'Bu sayfaya giriş yetkiniz yok', 'info');
 							}
+
 							sessionStorage.setItem('user_type', data.user_type + '');
 							swal.fire("Giriş Başarılı", "", "success")
-							setTimeout(() => { location.pathname = "users.html" }, 1000)
+							setTimeout(() => { location.pathname = "users.html" }, 1000);
+							return ''
 						})
 				}
 			})

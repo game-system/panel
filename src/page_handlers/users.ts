@@ -12,11 +12,14 @@ import { DataTable } from "simple-datatables";
 import "simple-datatables/dist/style.css";
 import { loadTpl, handlebarsHelpers } from "../utils";
 import swal from "sweetalert2";
+import Socket from "./socket";
 registerHelper(handlebarsHelpers);
 class Users extends Request {
 	myData?: User;
 	wallets: Wallet[] = [];
 	myChildren: User[] = [];
+	addUserTemplate = loadTpl(require("../partials/addUserModal.hbs"));
+	noteTemplate = loadTpl(require("../partials/userNote.hbs"));
 	usersTemplate = loadTpl(require("../partials/usersTable.hbs"));
 	userDeleteTpl = loadTpl(require("../partials/deleteUser.hbs"));
 	creditTemplate = loadTpl(require("../partials/credit.hbs"));
@@ -30,6 +33,7 @@ class Users extends Request {
 		super(c);
 		this.cfg = c;
 		const that = this;
+		const socket = new Socket(c);
 		window.addEventListener("DOMContentLoaded", () => {
 			const mdlEl = document.getElementById("actionModal") || undefined;
 			that.modal = new Modal(mdlEl, {});
@@ -70,59 +74,55 @@ class Users extends Request {
 	}
 	addNewUserUi() {
 		const that = this;
-		const btn = document.getElementById("new_user_btn");
-		function handleSubmit(el: HTMLFormElement | null | undefined) {
-			return (e: Event) => {
-				e.preventDefault();
-				const id = el?.querySelector(
-					"input[type='text']"
-				) as HTMLInputElement | null;
-				const pass = el?.querySelector(
-					"input[type='password']"
-				) as HTMLInputElement | null;
-				if (!id?.value) return id?.focus();
-				if (!pass?.value) return pass?.focus();
-				that
-					.addChild({
-						id: id?.value || "",
-						password: pass?.value || ""
-					} as User)
-					.then(({ data, reason, success }) => {
-						if (!success) {
-							const [title, msg] = translateError(reason as Err);
-							return Promise.reject(
-								IziToast.error({ title, message: msg || "" })
-							);
-						}
-						data.date_str = new Date(data.created_at * 1000)
-							.toISOString()
-							.split("T")[0];
-						that.myChildren.unshift(data);
-						that.updateChildrenUI();
-						return true;
-					})
-					.then(() => {
-						IziToast.success({ title: "Başarılı", message: "İşlem Başarılı" });
-						that.modal.hide();
-					});
-			};
-		}
-		btn?.addEventListener("click", () => {
-			fetch(require("../partials/addUserModal.hbs"))
-				.then(d => d.text())
+		document.querySelector("#new_user_btn")?.addEventListener("click", () => {
+			const userType = sessionStorage.getItem('user_type');
+			this.addUserTemplate
+				.then(d => d({ note: (userType != 'seller' ? true : false) }))
 				.then(d => {
 					that.modalBody && (that.modalBody.innerHTML = d);
-					const form = that.modalBody?.querySelector("form");
-					that.modalBody
-						?.querySelector("#submitNewAddUser")
-						?.addEventListener("click", handleSubmit(form));
-					form?.addEventListener("submit", handleSubmit(form));
+					const form: HTMLFormElement | null | undefined = that.modalBody?.querySelector("form");
+					that.modalBody?.querySelector("#submitNewAddUser")?.addEventListener("click", () => this.handleSumbit(form));
+					form?.addEventListener("keypress", (e) => {
+						if (e.keyCode == 13 || e.keyCode == 10) {
+							this.handleSumbit(form)
+						}
+					});
 					that.modal.toggle();
 				});
 		});
 	}
+	private handleSumbit(el: HTMLFormElement | null | undefined) {
+		console.log(el);
+		const that = this;
+		const id = el?.querySelector("input[type='text']") as HTMLInputElement | null;
+		const pass = el?.querySelector("input[type='password']") as HTMLInputElement | null;
+		const note = el?.querySelector('textarea') as HTMLInputElement | null;
+		if (!id?.value) return id?.focus();
+		if (!pass?.value) return pass?.focus();
+		if (note && !note?.value) return note?.focus();
+		that.addChild({
+			id: id?.value || "",
+			password: pass?.value || "",
+			note: note?.value || '',
+		} as User)
+			.then(({ data, reason, success }) => {
+				if (!success) {
+					const [title, msg] = translateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || "" }));
+				}
+				data.date_str = new Date(data.created_at * 1000).toISOString().split("T")[0];
+				that.myChildren.unshift(data);
+				that.updateChildrenUI();
+				return true;
+			})
+			.then(() => {
+				IziToast.success({ title: "Başarılı", message: "İşlem Başarılı" });
+				that.modal.hide();
+			});
+	}
 	updateUserCreditUI() {
 		const el: HTMLElement | null = document.querySelector("#credits") || null;
+		if (this.myData?.user_type == 'seller' || this.myData?.user_type == 'user') return;
 		this.creditTemplate
 			.then(t => t({ wallets: this.wallets }))
 			.then(html => el && (el.innerHTML = html));
@@ -133,13 +133,13 @@ class Users extends Request {
 		that.usersTemplate
 			.then(t => {
 				return t({
-					children: that.myChildren,
+					children: that.myChildren.sort((a, b) => (a.id < b.id) ? -1 : (a.id > b.id) ? 1 : 0),
 					is_seller: that.myData?.user_type === "seller"
 				});
 			})
 			.then(tpl => {
 				el && (el.innerHTML = tpl);
-				new DataTable(el);
+				new DataTable(el, { perPageSelect: [10, 20, 50, 70, 100], perPage: 100 });
 			});
 	}
 	onMoneyClickHandler(uid: string) {
@@ -163,25 +163,71 @@ class Users extends Request {
 				return Promise.all([this.moneyTransferTpl, data]);
 			})
 			.then(([t, data]) => {
-				this.modalBody && (this.modalBody.innerHTML = t({ uid, data }));
-				this.modal.show();
+				swal.fire({
+					title: `<strong>Para Transferi: ${uid}</strong>`,
+					html: t({ uid, data }),
+					showCloseButton: false,
+					showCancelButton: true,
+					showConfirmButton: false,
+					focusConfirm: false,
+					cancelButtonText: 'Kapat',
+				});
+				const forms = [].slice.call(document.querySelector('#tableForms')?.querySelectorAll('form')) as HTMLFormElement[];
+				forms.forEach((e, i) => {
+					e.addEventListener('keypress', (el) => {
+						if (el.keyCode == 13 || el.keyCode == 10) {
+							this.updtCredit(uid, data[i].game_id, false);
+							el.preventDefault();
+						}
+					})
+				})
 			});
 	}
 	updtCredit(uid: string, gameID: number, isReceive: boolean) {
 		const that = this;
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
-		const elems = [].slice.call(
-			document.querySelector("#form_" + gameID)?.querySelectorAll("input")
-		) as HTMLInputElement[];
+		const elems = [].slice.call(document.querySelector("#form_" + gameID)?.querySelectorAll("input")) as HTMLInputElement[];
 		if (!elems || !elems.length || elems.length < 2) return;
 		let credit = parseFloat(elems[0].value);
-
 		this.updateCredit(
 			user,
 			isReceive ? Math.abs(credit) * -1 : credit,
 			gameID,
 			elems[1].checked
 		)
+			.catch(() => Promise.reject(IziToast.error({ title: "Hata", message: "İşlem başarısız" })))
+			.then(({ success, reason }) => {
+				if (!success) {
+					const [title, msg] = translateError(reason as Err);
+					return Promise.reject(IziToast.error({ title, message: msg || "" }));
+				}
+				const index = that.wallets.reduce((stt, curr, i) => (curr.game_id == gameID ? i : stt), -1);
+				if (index === -1) return Promise.reject("");
+				that.wallets[index][elems[1].checked ? "bonus_balance" : "balance"] -= isReceive ? Math.abs(credit) * -1 : credit;
+				that.updateUserCreditUI();
+				return Promise.resolve("")
+			});
+		swal.close();
+	}
+	onNoteClickHandler(uid: string, note: string) {
+		this.noteTemplate
+			.then(t => {
+				swal.fire({
+					title: `<strong>Kullanıcı: ${uid}</strong>`,
+					html: t({ uid, note }),
+					showCloseButton: false,
+					showConfirmButton: false,
+					showCancelButton: true,
+					focusConfirm: false,
+					cancelButtonText: 'Kapat',
+				})
+
+			})
+	}
+	updateNote(id: string) {
+		const noteElem: HTMLInputElement | null = document.querySelector('#user-note');
+		const note = noteElem?.value;
+		this.updateProfile({ id } as User, { note })
 			.catch(() =>
 				Promise.reject(
 					IziToast.error({ title: "Hata", message: "İşlem başarısız" })
@@ -190,21 +236,15 @@ class Users extends Request {
 			.then(({ success, reason }) => {
 				if (!success) {
 					const [title, msg] = translateError(reason as Err);
-					return Promise.reject(IziToast.error({ title, message: msg || "" }));
+					return Promise.reject(
+						IziToast.error({ title, message: msg || "" })
+					);
 				}
-				const index = that.wallets.reduce(
-					(stt, curr, i) => (curr.game_id == gameID ? i : stt),
-					-1
-				);
-				if (index === -1) return Promise.reject("");
-				that.wallets[index][
-					elems[1].checked ? "bonus_balance" : "balance"
-				] -= isReceive ? Math.abs(credit) * -1 : credit;
-				that.updateUserCreditUI();
-
-				return Promise.resolve("")
+				return IziToast.success({
+					title: "Başarılı",
+					message: "İşlem başarıyla gerçekleşti"
+				});
 			});
-
 	}
 	onUserEditClickHandler(uid: string) {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
@@ -242,10 +282,8 @@ class Users extends Request {
 					if (!userInfoElems) return;
 					if (userInfoElems[0]?.value) userInfo.email = userInfoElems[0].value;
 					if (userInfoElems[1]?.value) userInfo.phone = userInfoElems[1].value;
-					if (userInfoElems[2]?.value)
-						userInfo.password = userInfoElems[2].value;
-					if (userInfoElems[3]?.value)
-						userInfo.acc_reset_passwd = userInfoElems[3].value;
+					if (userInfoElems[2]?.value) userInfo.password = userInfoElems[2].value;
+					if (userInfoElems[3]?.value) userInfo.acc_reset_passwd = userInfoElems[3].value;
 					this.updateProfile(user, userInfo)
 						.catch(() =>
 							Promise.reject(

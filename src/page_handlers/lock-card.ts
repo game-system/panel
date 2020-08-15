@@ -8,6 +8,7 @@ import { Request, User, TableGroup, Wallet, Err } from "tombalaApi";
 import { Modal } from "@coreui/coreui"
 import translateError from "./errMessagesTR";
 import { loadTpl, handlebarsHelpers } from "../utils";
+import Socket from './socket';
 
 interface BreadCrumb {
 	id: number,
@@ -37,6 +38,7 @@ class Users extends Request {
 		super(c)
 		this.cfg = c;
 		const that = this
+		const socket = new Socket(c);
 		window.addEventListener("DOMContentLoaded", () => {
 			const mdlEl = document.getElementById("actionModal") || undefined;
 			that.modal = new Modal(mdlEl, {})
@@ -106,8 +108,13 @@ class Users extends Request {
 				return that.updateCardUI(id);
 			})
 	}
-
+	updateLockCardPieceUI() {
+		const el: HTMLElement | null = document.querySelector('#lock-card-piece') || null;
+		el && (el.innerHTML = this.lockCardData.length + '');
+		console.log(this.lockCardData.length, this.lockCardData);
+	}
 	updateUserCreditUI() {
+		if (this.myData?.user_type == 'seller' || this.myData?.user_type == 'user') return;
 		const el: HTMLElement | null = document.querySelector('#credits') || null;
 		this.creditTemplate
 			.then(t => t({ wallets: this.wallets }))
@@ -129,7 +136,7 @@ class Users extends Request {
 	}
 	updateCardUI(tgID: number) {
 		const that = this;
-		that.getGameCards(this.selectedGameId||1)
+		that.getGameCards(this.selectedGameId || 1)
 			.catch(e => Promise.reject(IziToast.error({ title: 'İnternet Hatası', message: e })))
 			.then(({ success, reason, data }) => {
 				if (!success) {
@@ -138,7 +145,7 @@ class Users extends Request {
 				}
 				return Promise.all([that.cardTemplate, data]);
 			})
-			.then(([t, data]) => t({ tgID, numLockCards: that.lockCardData, Cards: data }))
+			.then(([t, data]) => t({ tgID, numLockCards: that.lockCardData, Cards: data, lockCardPiece: that.lockCardData.length }))
 			.then(tpl => that.con && (that.con.innerHTML = tpl));
 	}
 	updateUiMydata() {
@@ -158,6 +165,7 @@ class Users extends Request {
 				}
 				that.lockCardData.push(cardID);
 				that.updateCardUI(tgID);
+				that.updateLockCardPieceUI();
 				return IziToast.success({ title: 'Başarılı', message: 'İşlem başarıyla gerçekleşti' });
 			})
 	}
@@ -171,13 +179,14 @@ class Users extends Request {
 					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || '' }));
 				}
-				delete that.lockCardData[that.lockCardData.indexOf(cardID)];
+				that.lockCardData.splice(that.lockCardData.indexOf(cardID), 1);
 				that.updateCardUI(tgID);
+				that.updateLockCardPieceUI();
 				return IziToast.success({ title: 'Başarılı', message: 'İşlem başarıyla gerçekleşti' });
 			})
 	}
 	async getMyTableGroups(): Promise<TableGroup[]> {
-		return this.getGameData(this.selectedGameId||1)
+		return this.getGameData(this.selectedGameId || 1)
 			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: e })))
 			.then(({ success, data, reason }) => {
 				if (!success) {
@@ -189,7 +198,11 @@ class Users extends Request {
 	}
 	async getMyData(): Promise<User> {
 		return this.me()
-			.catch(e => Promise.reject(IziToast.error({ title: 'Hata', message: 'internet sorunu' + e })))
+			.catch(e =>
+				Promise.reject(
+					IziToast.error({ title: "Hata", message: "internet sorunu" + e })
+				)
+			)
 			.then(({ success, data, reason }) => {
 				if (!success) {
 					const [title, msg] = translateError(reason as Err);

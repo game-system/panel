@@ -12,6 +12,7 @@ import { registerHelper } from "handlebars";
 import { DataTable } from "simple-datatables";
 import "simple-datatables/dist/style.css";
 import swal, { SweetAlertOptions } from "sweetalert2"
+import Socket from "./socket";
 registerHelper(handlebarsHelpers);
 interface Windw extends Window {
 	accPlace: HTMLElement;
@@ -31,16 +32,14 @@ class Users extends Request {
 		super(c);
 		this.cfg = c;
 		const that = this;
+		const socket = new Socket(c);
 		window.addEventListener("DOMContentLoaded", () => {
 			const mdlEl = document.getElementById("actionModal") || undefined;
 			that.modal = new Modal(mdlEl, {});
 			that.modalBody = mdlEl?.querySelector(".modal-dialog") || undefined;
-			that
-				.getMyData()
-				.then(d => (that.myData = d))
-				.then(() => that.updateUiMydata());
+			that.getMyData().then(d => (that.myData = d)).then(() => that.updateUiMydata());
 			that.initWallet();
-			this.render_accounting();
+			that.render_accounting();
 		});
 	}
 	initWallet() {
@@ -59,6 +58,7 @@ class Users extends Request {
 			});
 	}
 	updateUserCreditUI() {
+		if (this.myData?.user_type == 'seller' || this.myData?.user_type == 'user') return;
 		const el: HTMLElement | null = document.querySelector("#credits") || null;
 		this.creditTemplate
 			.then(t => t({ wallets: this.wallets }))

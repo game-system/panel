@@ -6,6 +6,7 @@ const userType = sessionStorage.getItem('user_type');
 //@ts-ignore
 navBarTemplate.then(t => t({ seller: userType == 'seller' ? true : false })).then(html => {
 	document.querySelector("#sidebar")?.insertAdjacentHTML("beforeend", html);
+	document.querySelector('#sidebar')?.classList.add('text-uppercase');
 })
 //@ts-ignore
 window.logout_a?.addEventListener("click", e => {

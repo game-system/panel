@@ -15,11 +15,17 @@
 				<label for="addNewUserPass">Şifre:</label>
 				<input id="addNewUserPass" class="form-control" placeholder="Şifre" type="password">
 			</div>
-			<input class="d-none" type="submit">
+			{{#if note}}
+			<div class="form-group">
+				<label for="addNewUserPass">Not:</label></br>
+				<textarea id='addNewUserNote' class="form-control" rows="6" cols="60" name="text"
+					placeholder="Enter text"></textarea>
+			</div>
+			{{/if}}
 		</form>
 	</div>
 	<div class="modal-footer">
-		<button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
-		<button type="button" class="btn btn-primary" id="submitNewAddUser">Ekle</button>
+		<button type="submit" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+		<input type="button" class="btn btn-primary" id="submitNewAddUser" value='Ekle' />
 	</div>
 </div>
