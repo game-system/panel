@@ -11,6 +11,8 @@ export default class Login extends Request {
 	constructor(c: Config) {
 		super(c)
 		const that = this;
+		sessionStorage.clear();
+		localStorage.clear();
 		this.listenInputChanges()
 		this.form.onsubmit = function (e) {
 			e.preventDefault();
@@ -36,7 +38,7 @@ export default class Login extends Request {
 							if (!success) {
 								const [title, msg] = translateError(reason as Err);
 								swal.fire(title, msg || '', "error")
-							} 
+							}
 							if (data.user_type == 'user') {
 								return swal.fire('Giriş Başarısız', 'Bu sayfaya giriş yetkiniz yok', 'info');
 							}

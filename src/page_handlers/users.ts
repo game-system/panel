@@ -36,7 +36,7 @@ class Users extends Request {
 			that.modalBody = mdlEl?.querySelector(".modal-dialog") || undefined;
 			that
 				.getMyData()
-				.then(d => (that.myData = d))
+				.then(d => that.myData = d)
 				.then(() => that.updateUiMydata())
 				.then(that.getMyChildren.bind(that))
 				.then(
@@ -134,7 +134,7 @@ class Users extends Request {
 			.then(t => {
 				return t({
 					children: that.myChildren,
-					is_seller:that.myData?.user_type === "seller"
+					is_seller: that.myData?.user_type === "seller"
 				});
 			})
 			.then(tpl => {
@@ -281,10 +281,10 @@ class Users extends Request {
 			.then(([t, data]) => {
 				// this.modalBody && (this.modalBody.innerHTML = t({ admin, user, history: data.data }));
 				swal.fire({
-					title:"Kupon Geçmişi",
-					html:t({ admin, user, history: data.data }),
-					width:"100%",
-					onRender:()=>{
+					title: "Kupon Geçmişi",
+					html: t({ admin, user, history: data.data }),
+					width: "100%",
+					onRender: () => {
 						new DataTable("#cpn-history")
 					}
 				})
@@ -377,7 +377,8 @@ class Users extends Request {
 			.then(({ success, data, reason }) => {
 				if (!success) {
 					const [title, msg] = translateError(reason as Err);
-					return Promise.reject(IziToast.error({ title, message: msg || "" }));
+					IziToast.error({ title, message: msg || "" });
+					return Promise.reject(setTimeout(() => location.pathname='index.html', 1000));
 				}
 				if (data.user_type == "user") location.pathname = "/index.html";
 				return data;

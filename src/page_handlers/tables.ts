@@ -130,7 +130,7 @@ class TableGroupsAndTables extends Request {
 				if (!checkbox) return;
 				let _data: TableGroup = {
 					id: -1,
-					game_id: that.selectedGameId||1,
+					game_id: that.selectedGameId || 1,
 					name: tableGroupName.value,
 					group_type: tableGroupType.value as any,
 					is_bonus: checkbox.checked,
@@ -412,7 +412,8 @@ class TableGroupsAndTables extends Request {
 			.then(({ success, data, reason }) => {
 				if (!success) {
 					const [title, msg] = translateError(reason as Err);
-					return Promise.reject(IziToast.error({ title, message: msg || "" }));
+					IziToast.error({ title, message: msg || "" });
+					return Promise.reject(setTimeout(() => location.pathname = 'index.html', 1000));
 				}
 				if (data.user_type == "user") location.pathname = "/index.html";
 				return data;
