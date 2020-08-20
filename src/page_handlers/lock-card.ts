@@ -166,7 +166,7 @@ class Users extends Request {
 				that.lockCardData.push(cardID);
 				that.updateCardUI(tgID);
 				that.updateLockCardPieceUI();
-				return IziToast.success({ title: 'Başarılı', message: 'İşlem başarıyla gerçekleşti' });
+				return IziToast.success({ title: 'Başarılı', timeout: 1000, });
 			})
 	}
 	onUnlockCard(tgID: number, cardID: number) {
@@ -182,7 +182,7 @@ class Users extends Request {
 				that.lockCardData.splice(that.lockCardData.indexOf(cardID), 1);
 				that.updateCardUI(tgID);
 				that.updateLockCardPieceUI();
-				return IziToast.success({ title: 'Başarılı', message: 'İşlem başarıyla gerçekleşti' });
+				return IziToast.success({ title: 'Başarılı', timeout: 1000,  });
 			})
 	}
 	async getMyTableGroups(): Promise<TableGroup[]> {
