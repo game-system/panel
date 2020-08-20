@@ -387,7 +387,7 @@ class TableGroupsAndTables extends Request {
 		const that = this;
 		const el = document.querySelector("#accordion-table-groups-and-tables");
 		let tGroup = that.myTableGroups;
-		tGroup.forEach(e => e.tables = e.tables.sort((a, b) => (a.price < b.price) ? -1 : ((a.price > b.price) ? 1 : 0)));
+		tGroup.forEach(e => e.tables = e.tables.sort((a,b) => (a.price < b.price) ? -1 : (a.price > b.price) ? 1 : 0);
 		that.tableGroupsAndTablesTemplate
 			.then(t => {
 				return t({
