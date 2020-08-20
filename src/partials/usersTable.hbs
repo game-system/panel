@@ -10,14 +10,12 @@
 		<td><b>{{#if date_str}}{{date_str}} {{else}} {{created_at}}{{/if}}</b></td>
 		<td><input type="checkbox" {{#if is_disabled}} checked {{/if}} disabled></td>
 		<td class="font-weight-bold">
-			
-			<div onclick="ctx.onNoteClickHandler('{{id}}',{{#if note}} '{{note}}' {{else}}'Not yok'{{/if}})" class="btn btn-success p-1">Not</div>
-		
 			<div onclick="ctx.onMoneyClickHandler('{{id}}')" class="btn btn-success p-1"><span style="font-size:1.3rem" class="cil-plus btn-icon p-1"></span></div>
 			{{#if @root.is_seller}}
 			<div onclick="ctx.onUserCouponHistoryClick('{{id}}')" class="btn btn-primary p-1">Geçmiş</div>
 			{{/if}}
 			<div onclick="ctx.onUserEditClickHandler('{{id}}')" class="btn btn-info p-1"><span    style="font-size:1.3rem" class="cil-pencil btn-icon p-1"></span></div>
+			<div onclick="ctx.onNoteClickHandler('{{id}}',{{#if note}} '{{note}}' {{else}}'Not yok'{{/if}})" class="btn btn-success p-1">Not</div>
 			<div onclick="ctx.onUserDeleteClickHandler('{{id}}')" class="btn btn-danger p-1"><span  style="font-size:1.3rem" class="cil-ban btn-icon p-1"></span></div>
 		</td>
 	</tr>
