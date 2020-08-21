@@ -1,3 +1,17 @@
+<div class=" card w-100 p-3">
+  
+Kart kitlemek istediğiniz oda grubunun üzerine tıklayınız açılan sayfada kart numaraları görünücektir.</br>
+Kilitlemek istediğiniz kart numarasının üzerine 1 kere tıklayınız kart kilitlenicektir.</br></br>
+
+Kart kilitleme sisteminin çalışma mantığı şöyledir:</br> Eğer siz 1 numaralı kartı kilitlediniz 1 numaralı kart müşteri tarafından satın alınmamış ise kartı anında kilitlemektedir.</br>
+Eğerki 1 numaralı kart müşteri tarafından satın alınmış ise müşteri kartı satın almadığı taktirde otomatik kilitlenicektir.</br></br>
+
+NOT: Kart kilitme işlemini seans arasında yapmayınız! Oyun devam ederken kart kilitleme işlemini yapabilirsiniz.</br>
+Eğerki seans arasında kart kilitleme işlemini yaparsanız kilitlediğiniz kartı müşteri satın alamaz fakat seans arasında sistem database ile haberleşemediği için müşteride halen satın alınabilir olarak görünebilir müşteri kartı satın almak istediğinde kart satın alınamadı hatası alacaktır!</br>
+
+</div>
+
+
 <span class='w-100 ml-3 mb-3 font-weight-bold'>KİLİTLİ KART SAYISI: <span id='lock-card-piece'>{{lockCardPiece}}</span></span>
 
 {{#each Cards}}
