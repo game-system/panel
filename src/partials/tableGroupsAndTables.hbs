@@ -5,8 +5,12 @@
       <button class="btn btn-link but-con" type="button" data-toggle="collapse" data-target="#collapse_{{id}}"
         aria-expanded="true" aria-controls="collapse_{{id}}">
         <div class='tableGroups'>
-          <div class='tg-name'><p>{{name}}</p></div>
-          <div class='tg-group_type'><p>{{translate group_type}}</p></div>
+          <div class='tg-name'>
+            <p>{{name}}</p>
+          </div>
+          <div class='tg-group_type'>
+            <p>{{translate group_type}}</p>
+          </div>
           <div class='tg-bonus'><input type="checkbox" {{#if is_bonus}} checked {{/if}} disabled></div>
           <div class="font-weight-bold buttons">
             <div onclick="ctx.onTableAddClickHandler('{{id}}')" class="btn btn-success p-1">
@@ -52,3 +56,29 @@
   </div>
 </div>
 {{/each}}
+<div class='card p-4'>
+<b>NOT:</b>
+Masa grubu açarken lütfen hangi oyuna oda grubu açtığınızı kontrol ediniz.</br>
+Açtığınız oda grubuna masa oluşturmak için + işaretine basın ve gerekli bilgileri doldurdukdan sonra kaydet tıklayarak oluşturabilirsiniz.</br></br>
+
+<b>150 KART SİSTEM</b>
+Bu masa grubunda açtığınız tüm masaları 150 kart üzerinden satışa sunar.</br>
+Örneğin 5 TL 10 TL 20 TL masaları oluşturdunuz 1 numaralı kart 1 kullanıcı 5 TL masada satın alır ise müşteri sadece 5 TL masadan kart almaya devam eder ve diğer tüm masalarda kart satıldı olarak görünür.</br>
+Yani siz 150 kart üzerinden açacağınız masa fiyatlarına göre kart satıyor olacaksınız.</br></br>
+
+<b>ÇOKLU ODA SİSTEM</b>
+Bu masa grubunda örneğin 5 TL 10 TL 20 TL masa açtınız müşteri 1 numaralı kartı aynı anda 5 TL - 10 TL - 20 TL masadan satın alabilir.</br>
+1 Numaralı kart 5 TL masadan satın alınır ise diğer sadece 5 TL masada satıldı olarak görülür diğer 10 TL ve 20 TL masalarda tekrar satın alınabilir.</br>
+Bu masa grubundaki mantık açacağınız her masa 150 kart üzerinden çalışır yani siz 5 TL 10 TL 20 TL açarsanız toplamda 450 kart satışa sunmuş olacaksınız.</br></br>
+
+<b>TEK KART TEK FİYAT SİSTEM</b>
+Bu masa grubunda örneğin 5 TL 10 TL 20 TL masalar açtınız, 5 TL masadan 1 numaralı kart alındığı taktirde müşteri sadece 5 TL masadan oyun oynamaya devam eder, diğer 10 TL ve 20 TL müşteri ekranında tamamen kapalı hale gelir ve başka fiyatta kart alamaz.</br>
+Örneğin müşteriniz 5 TL masadan 1 numaralı kartı satın aldı ve 10 TL 20 TL fiyatlar ekranında otomatikmen kapanır ve diğer müşteriniz 1 numaralı kartı 10 TL veya 20 TL masadan satın alabilir.</br>
+Bu masa grubundaki mantık açacağınız her masa 150 kart üzerinden çalışır yani siz 5 TL 10 TL 20 TL açarsanız toplamda 450 kart satışa sunmuş olacaksınız.</br></br>
+
+<b>APİ SİSTEM</b>
+Bu masa grubundaki mantık şudur kart sayısı hiç bir zaman yoktur örneğin siz 5 TL 10 TL 20 TL masaları açtınız ve 5 TL veya 10 TL veya 20 TL masadan 1 numaralı kartı 1000 kişi satın alabilir.</br>
+Bu masa grubundaki sistem tamamen online sistemler için tasarlanmıştır eğerki bu tarz oyun oynatmak istiyorsanız sizde aktif edebilirsiniz.</br>
+NOT: Bu sistemi kullanmak isterseniz şöyle düşünün 1 numaralı kartı 100 kişi satın aldı ve o seans 1 numaralı karta tulum çıktı 100 kişiye tulum ikramiyesi ödenir.</br>
+Bu sistemi aktif etmeden önce risk analizi ediniz.</br>
+</div>

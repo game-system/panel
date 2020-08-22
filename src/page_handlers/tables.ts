@@ -251,22 +251,24 @@ class TableGroupsAndTables extends Request {
 			});
 		});
 	}
+	editTableGroup(tableGroup: TableGroup) {
+		const that = this;
+		const name = (that.modalBody?.querySelector('input[type="text"]') as HTMLInputElement).value;
+		tableGroup.name = name;
+		that.updateTableGroupUI();
+		that.modal.hide();
+	}
 	onTableGroupEditClickHandler(id: number) {
 		const that = this;
 		const tableGroup = this.myTableGroups.filter(tg => tg.id == id)[0];
 		that.editTableGroupTemplate.then(t => {
 			that.modalBody && (that.modalBody.innerHTML = t(tableGroup));
 			this.modal.show();
-			this.modalBody
-				?.querySelector("#saveTableGroupData")
-				?.addEventListener("click", () => {
-					const name = (that.modalBody?.querySelector(
-						'input[type="text"]'
-					) as HTMLInputElement).value;
-					tableGroup.name = name;
-					that.updateTableGroupUI();
-					that.modal.hide();
-				});
+			this.modalBody?.querySelector("#saveTableGroupData")?.addEventListener("click", () => this.editTableGroup(tableGroup));
+			const form = that.modalBody?.querySelector("form");
+			form?.addEventListener("keypress", (e) => {
+				if (e.keyCode == 13 || e.keyCode == 10) { this.editTableGroup(tableGroup) }
+			});
 		});
 	}
 	onTableGroupDeleteClickHandler(id: number) {
@@ -300,6 +302,40 @@ class TableGroupsAndTables extends Request {
 				});
 		});
 	}
+	editTable(id: number, tableGroupID: number) {
+		const that = this;
+		const formInputElems: HTMLInputElement[] = [].slice.call(
+			that.modalBody?.querySelector("form")?.querySelectorAll("input")
+		);
+		let table: Table = {} as Table;
+		table.id = id;
+		table.group_id = tableGroupID;
+		if (formInputElems[0].value) table.name = formInputElems[0].value;
+		if (formInputElems[1].value) table.price = parseInt(formInputElems[1].value);
+		if (formInputElems[2].value) table.c1 = parseInt(formInputElems[2].value);
+		if (formInputElems[3].value) table.c2 = parseInt(formInputElems[3].value);
+		if (formInputElems[4].value) table.t = parseInt(formInputElems[4].value);
+		if (formInputElems[5].value) table.tulum = parseInt(formInputElems[5].value);
+		if (formInputElems[6].value) table.first_5 = parseInt(formInputElems[6].value);
+		if (formInputElems[7].value) table.first_10 = parseInt(formInputElems[7].value);
+		if (formInputElems[8].value) table.min_cards = parseInt(formInputElems[8].value);
+		that.updateTable(id, table)
+			.catch(er => Promise.reject(IziToast.error({ title: "Hata", message: er })))
+			.then(({ reason, success }) => {
+				if (!success) {
+					const [title, msg] = translateError(reason as Err);
+					return Promise.reject(
+						IziToast.error({ title, message: msg || "" })
+					);
+				}
+				that.myTableGroups.filter(() => (id = table.group_id))[0].tables.forEach(e => {
+					if (e.id == table.id) Object.assign(e, table);
+				});
+				that.updateTableGroupUI();
+				that.modal.hide();
+				return;
+			});
+	}
 	onTableEditClickHandler(tableGroupID: number, id: number) {
 		const that = this;
 		const _table = this.myTableGroups
@@ -308,41 +344,12 @@ class TableGroupsAndTables extends Request {
 		that.editTableTemplate.then(t => {
 			that.modalBody && (that.modalBody.innerHTML = t(_table));
 			this.modal.show();
-			this.modalBody
-				?.querySelector("#saveTableGroupData")
-				?.addEventListener("click", () => {
-					const formInputElems: HTMLInputElement[] = [].slice.call(
-						that.modalBody?.querySelector("form")?.querySelectorAll("input")
-					);
-					let table: Table = {} as Table;
-					table.id = id;
-					table.group_id = tableGroupID;
-					if (formInputElems[0].value) table.name = formInputElems[0].value;
-					if (formInputElems[1].value) table.price = parseInt(formInputElems[1].value);
-					if (formInputElems[2].value) table.c1 = parseInt(formInputElems[2].value);
-					if (formInputElems[3].value) table.c2 = parseInt(formInputElems[3].value);
-					if (formInputElems[4].value) table.t = parseInt(formInputElems[4].value);
-					if (formInputElems[5].value) table.tulum = parseInt(formInputElems[5].value);
-					if (formInputElems[6].value) table.first_5 = parseInt(formInputElems[6].value);
-					if (formInputElems[7].value) table.first_10 = parseInt(formInputElems[7].value);
-					if (formInputElems[8].value) table.min_cards = parseInt(formInputElems[8].value);
-					that.updateTable(id, table)
-						.catch(er => Promise.reject(IziToast.error({ title: "Hata", message: er })))
-						.then(({ reason, success }) => {
-							if (!success) {
-								const [title, msg] = translateError(reason as Err);
-								return Promise.reject(
-									IziToast.error({ title, message: msg || "" })
-								);
-							}
-							that.myTableGroups.filter(() => (id = table.group_id))[0].tables.forEach(e => {
-								if (e.id == table.id) Object.assign(e, table);
-							});
-							that.updateTableGroupUI();
-							that.modal.hide();
-							return;
-						});
-				});
+			this.modalBody?.querySelector("#saveTableGroupData")?.addEventListener("click", () => this.editTable(id, tableGroupID));
+		});
+		const form = that.modalBody?.querySelector("form");
+		console.log(form);
+		form?.addEventListener("keypress", (e) => {
+			if (e.keyCode == 13 || e.keyCode == 10) { this.editTable(id, tableGroupID) }
 		});
 	}
 	onTableDeleteClickHandler(tableGroupID: number, id: number) {
