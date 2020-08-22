@@ -250,61 +250,57 @@ class Users extends Request {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
 		const admin = this.myData;
 		if (!user)
-			return IziToast.error({
-				title: "Hata",
-				message: "Geçersiz kullanıcı idsi, Lütfen bizi arayın"
-			});
+			return IziToast.error({ title: "Hata", message: "Geçersiz kullanıcı idsi, Lütfen bizi arayın" });
 		this.editUserTpl
 			.then(t => {
 				this.modalBody && (this.modalBody.innerHTML = t({ admin, user }));
 				this.modal.show();
-				return this.modalBody?.querySelector("#saveUserData") as
-					| HTMLElement
-					| undefined;
+				return this.modalBody?.querySelector("#saveUserData") as | HTMLElement | undefined;
 			})
 			.then(el => {
 				if (!el) return;
-				let userInfo: {
-					email: string;
-					phone: string;
-					password: string;
-					acc_reset_passwd: string;
-				} = {} as {
-					email: string;
-					phone: string;
-					password: string;
-					acc_reset_passwd: string;
-				};
-				el.onclick = () => {
-					const userInfoElems = this.modalBody?.querySelectorAll(
-						".form-control"
-					) as HTMLInputElement[] | undefined;
-					if (!userInfoElems) return;
-					if (userInfoElems[0]?.value) userInfo.email = userInfoElems[0].value;
-					if (userInfoElems[1]?.value) userInfo.phone = userInfoElems[1].value;
-					if (userInfoElems[2]?.value) userInfo.password = userInfoElems[2].value;
-					if (userInfoElems[3]?.value) userInfo.acc_reset_passwd = userInfoElems[3].value;
-					this.updateProfile(user, userInfo)
-						.catch(() =>
-							Promise.reject(
-								IziToast.error({ title: "Hata", message: "İşlem başarısız" })
-							)
-						)
-						.then(({ success, reason }) => {
-							if (!success) {
-								const [title, msg] = translateError(reason as Err);
-								return Promise.reject(
-									IziToast.error({ title, message: msg || "" })
-								);
-							}
-							return IziToast.success({
-								title: "Başarılı",
-								message: "İşlem başarıyla gerçekleşti"
-							});
-						});
-				};
+				el.onclick = () => this.updateUserInfo(user);
+				const form: HTMLFormElement | null | undefined = this.modalBody?.querySelector("form");
+				form?.addEventListener("keypress", (e) => {
+					if (e.keyCode == 13 || e.keyCode == 10) {
+						this.updateUserInfo(user);
+					}
+				});
 			});
 		return null;
+	}
+	updateUserInfo(user: User) {
+		let userInfo: {
+			email: string;
+			phone: string;
+			password: string;
+			acc_reset_passwd: string;
+		} = {} as {
+			email: string;
+			phone: string;
+			password: string;
+			acc_reset_passwd: string;
+		};
+		const userInfoElems = this.modalBody?.querySelectorAll(".form-control") as HTMLInputElement[] | undefined;
+		if (!userInfoElems) return;
+		if (userInfoElems[0]?.value) userInfo.email = userInfoElems[0].value;
+		if (userInfoElems[1]?.value) userInfo.phone = userInfoElems[1].value;
+		if (userInfoElems[2]?.value) userInfo.password = userInfoElems[2].value;
+		if (userInfoElems[3]?.value) userInfo.acc_reset_passwd = userInfoElems[3].value;
+		this.updateProfile(user, userInfo)
+			.catch(() => Promise.reject(IziToast.error({ title: "Hata", message: "İşlem başarısız" })))
+			.then(({ success, reason }) => {
+				if (!success) {
+					const [title, msg] = translateError(reason as Err);
+					return Promise.reject(
+						IziToast.error({ title, message: msg || "" })
+					);
+				}
+				return IziToast.success({
+					title: "Başarılı",
+					message: "İşlem başarıyla gerçekleşti"
+				});
+			});
 	}
 	onUserCouponHistoryClick(uid: string) {
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
@@ -416,7 +412,7 @@ class Users extends Request {
 				if (!success) {
 					const [title, msg] = translateError(reason as Err);
 					IziToast.error({ title, message: msg || "" });
-					return Promise.reject(setTimeout(() => location.pathname='index.html', 1000));
+					return Promise.reject(setTimeout(() => location.pathname = 'index.html', 1000));
 				}
 				if (data.user_type == "user") location.pathname = "/index.html";
 				return data;

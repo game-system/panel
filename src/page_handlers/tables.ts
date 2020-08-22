@@ -181,68 +181,74 @@ class TableGroupsAndTables extends Request {
 				});
 		});
 	}
-
+	addNewTable(tableGroup: TableGroup, id: number) {
+		const that = this;
+		const formInputElems: HTMLInputElement[] = [].slice.call(
+			that.modalBody?.querySelector("form")?.querySelectorAll("input")
+		);
+		//@ts-ignore
+		let t: Table = {
+			id: -1,
+			group_id: id,
+			name: formInputElems[0].value,
+			price: parseInt(formInputElems[1].value),
+			c1: parseInt(formInputElems[2].value),
+			c2: parseInt(formInputElems[3].value),
+			t: parseInt(formInputElems[4].value),
+			tulum: parseInt(formInputElems[5].value),
+			first_5: parseInt(formInputElems[6].value),
+			first_10: parseInt(formInputElems[7].value),
+			min_cards: parseInt(formInputElems[8].value)
+		};
+		that
+			.addTable(
+				t.group_id,
+				t.name,
+				t.price,
+				t.c1,
+				t.c2,
+				t.t,
+				t.tulum,
+				t.first_5,
+				t.first_10,
+				t.min_cards
+			)
+			.catch(er =>
+				Promise.reject(IziToast.error({ title: "Hata", message: er }))
+			)
+			.then(({ data, reason, success }) => {
+				if (!success) {
+					const [title, msg] = translateError(reason as Err);
+					return Promise.reject(
+						IziToast.error({ title, message: msg || "" })
+					);
+				}
+				t.id = data;
+				tableGroup.tables.push(t);
+				that.updateTableGroupUI();
+				that.modal.hide();
+				return;
+			});
+	}
 	onTableAddClickHandler(id: number) {
 		const that = this;
 		const tableGroup = this.myTableGroups.filter(tg => tg.id == id)[0];
 		if (!tableGroup)
 			return IziToast.error({
-				title: "Hata",
-				message: "Böyle bir masa bulunamadı."
+				title: "Hata", message: "Böyle bir masa bulunamadı."
 			});
 		that.addTableTemplate.then(t => {
 			that.modalBody && (that.modalBody.innerHTML = t(tableGroup));
 			this.modal.show();
 			that.modalBody
 				?.querySelector("#submitNewAddTable")
-				?.addEventListener("click", () => {
-					const formInputElems: HTMLInputElement[] = [].slice.call(
-						that.modalBody?.querySelector("form")?.querySelectorAll("input")
-					);
-					//@ts-ignore
-					let t: Table = {
-						id: -1,
-						group_id: id,
-						name: formInputElems[0].value,
-						price: parseInt(formInputElems[1].value),
-						c1: parseInt(formInputElems[2].value),
-						c2: parseInt(formInputElems[3].value),
-						t: parseInt(formInputElems[4].value),
-						tulum: parseInt(formInputElems[5].value),
-						first_5: parseInt(formInputElems[6].value),
-						first_10: parseInt(formInputElems[7].value),
-						min_cards: parseInt(formInputElems[8].value)
-					};
-					that
-						.addTable(
-							t.group_id,
-							t.name,
-							t.price,
-							t.c1,
-							t.c2,
-							t.t,
-							t.tulum,
-							t.first_5,
-							t.first_10,
-							t.min_cards
-						)
-						.catch(er =>
-							Promise.reject(IziToast.error({ title: "Hata", message: er }))
-						)
-						.then(({ data, reason, success }) => {
-							if (!success) {
-								const [title, msg] = translateError(reason as Err);
-								return Promise.reject(
-									IziToast.error({ title, message: msg || "" })
-								);
-							}
-							t.id = data;
-							tableGroup.tables.push(t);
-							that.updateTableGroupUI();
-							that.modal.hide();
-							return;
-						});
-				});
+				?.addEventListener("click", () => this.addNewTable(tableGroup, id));
+			const form = that.modalBody?.querySelector("form");
+			form?.addEventListener("keypress", (e) => {
+				if (e.keyCode == 13 || e.keyCode == 10) {
+					this.addNewTable(tableGroup, id);
+				}
+			});
 		});
 	}
 	editTableGroup(tableGroup: TableGroup) {
@@ -387,10 +393,12 @@ class TableGroupsAndTables extends Request {
 	updateTableGroupUI() {
 		const that = this;
 		const el = document.querySelector("#accordion-table-groups-and-tables");
+		let tGroup = that.myTableGroups;
+		tGroup.forEach(e => e.tables = e.tables.sort((a,b) => (a.price < b.price) ? -1 : (a.price > b.price) ? 1 : 0);
 		that.tableGroupsAndTablesTemplate
 			.then(t => {
 				return t({
-					tableGroups: that.myTableGroups
+					tableGroups: tGroup
 				});
 			})
 			.then(tpl => {
