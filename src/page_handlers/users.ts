@@ -296,6 +296,8 @@ class Users extends Request {
 						IziToast.error({ title, message: msg || "" })
 					);
 				}
+				this.modal.hide();
+				this.myChildren.map(e => (e.id == user.id) ? Object.assign(e, userInfo) : '');
 				return IziToast.success({
 					title: "Başarılı",
 					message: "İşlem başarıyla gerçekleşti"

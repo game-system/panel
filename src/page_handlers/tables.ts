@@ -333,9 +333,10 @@ class TableGroupsAndTables extends Request {
 				});
 				that.updateTableGroupUI();
 				that.modal.hide();
-				return;
+				return IziToast.success({ title: 'Başarılı', message: 'İşlem başarılı' });
 			});
 	}
+
 	onTableEditClickHandler(tableGroupID: number, id: number) {
 		const that = this;
 		const _table = this.myTableGroups
@@ -345,12 +346,12 @@ class TableGroupsAndTables extends Request {
 			that.modalBody && (that.modalBody.innerHTML = t(_table));
 			this.modal.show();
 			this.modalBody?.querySelector("#saveTableGroupData")?.addEventListener("click", () => this.editTable(id, tableGroupID));
-		});
-		const form = that.modalBody?.querySelector("form");
-		console.log(form);
-		form?.addEventListener("keypress", (e) => {
-			if (e.keyCode == 13 || e.keyCode == 10) { this.editTable(id, tableGroupID) }
-		});
+			return Promise.resolve(that.modalBody?.querySelector("form"));
+		}).then(form => {
+			form?.addEventListener("keypress", (e) => {
+				if (e.keyCode == 13 || e.keyCode == 10) { this.editTable(id, tableGroupID) }
+			});
+		})
 	}
 	onTableDeleteClickHandler(tableGroupID: number, id: number) {
 		const that = this;
@@ -394,7 +395,7 @@ class TableGroupsAndTables extends Request {
 		const that = this;
 		const el = document.querySelector("#accordion-table-groups-and-tables");
 		let tGroup = that.myTableGroups;
-		tGroup.forEach(e => e.tables = e.tables.sort((a,b) => (a.price < b.price) ? -1 : (a.price > b.price) ? 1 : 0);
+		tGroup.forEach(e => e.tables = e.tables.sort((a, b) => (a.price < b.price) ? -1 : (a.price > b.price) ? 1 : 0);
 		that.tableGroupsAndTablesTemplate
 			.then(t => {
 				return t({
