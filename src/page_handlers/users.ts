@@ -149,7 +149,7 @@ class Users extends Request {
 				title: "Hata",
 				message: "Geçersiz kullanıcı idsi, Lütfen bizi arayın"
 			});
-		this.getWallets(user, this.cfg.gameIds)
+		this.getWallets(user, ['tombala'])
 			.catch(() =>
 				Promise.reject(
 					IziToast.error({ title: "Hata", message: "Network Hatası" })
@@ -176,23 +176,23 @@ class Users extends Request {
 				forms.forEach((e, i) => {
 					e.addEventListener('keypress', (el) => {
 						if (el.keyCode == 13 || el.keyCode == 10) {
-							this.updtCredit(uid, data[i].game_id, false);
+							this.updtCredit(uid, data[i].game_type, false);
 							el.preventDefault();
 						}
 					})
 				})
 			});
 	}
-	updtCredit(uid: string, gameID: number, isReceive: boolean) {
+	updtCredit(uid: string, game_type: string, isReceive: boolean) {
 		const that = this;
 		const user = this.myChildren.filter(usr => usr.id == uid)[0];
-		const elems = [].slice.call(document.querySelector("#form_" + gameID)?.querySelectorAll("input")) as HTMLInputElement[];
+		const elems = [].slice.call(document.querySelector("#form_" + game_type)?.querySelectorAll("input")) as HTMLInputElement[];
 		if (!elems || !elems.length || elems.length < 2) return;
 		let credit = parseFloat(elems[0].value);
 		this.updateCredit(
 			user,
 			isReceive ? Math.abs(credit) * -1 : credit,
-			gameID,
+			game_type,
 			elems[1].checked
 		)
 			.catch(() => Promise.reject(IziToast.error({ title: "Hata", message: "İşlem başarısız" })))
@@ -201,7 +201,7 @@ class Users extends Request {
 					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || "" }));
 				}
-				const index = that.wallets.reduce((stt, curr, i) => (curr.game_id == gameID ? i : stt), -1);
+				const index = that.wallets.reduce((stt, curr, i) => (curr.game_type == game_type ? i : stt), -1);
 				if (index === -1) return Promise.reject("");
 				that.wallets[index][elems[1].checked ? "bonus_balance" : "balance"] -= isReceive ? Math.abs(credit) * -1 : credit;
 				that.updateUserCreditUI();
