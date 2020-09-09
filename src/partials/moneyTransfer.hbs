@@ -6,21 +6,21 @@
       <span>Kredi: <p class='font-weight-bold'>{{toFixed balance}}</p></span>
       <span>Bonus Kredi: <p class='font-weight-bold'>{{toFixed bonus_balance}}</p></span>
     </div>
-    <form id='form_{{game_id}}'>
+    <form id='form_{{game_type}}'>
       <div class="input-group mb-3">
         <div class="input-group-prepend">
           <span class="input-group-text">TL</span>
         </div>
-        <input type="number" id="{{autofocus game_id}}" tabindex="{{game_id}}" class="form-control" />
+        <input type="number" id="{{autofocus @index}}" tabindex="{{@index}}" class="form-control" />
       </div>
       <div class='d-flex flex-row justify-content-start'>
         <div class='d-flex flex-row justify-content-start align-items-center'>
           <input type="checkbox" /><label style='width:120px;margin:0;'>Bonus Kredi</label>
         </div>
         <div class='button-area'>
-          <input type="button" onclick='ctx.updtCredit("{{@root.uid}}",{{game_id}},false)' class="btn btn-primary mr-1"
+          <input type="button" onclick='ctx.updtCredit("{{@root.uid}}","{{game_type}}",false)' class="btn btn-primary mr-1"
             value='Gönder' />
-          <input type="button" onclick='ctx.updtCredit("{{@root.uid}}",{{game_id}},true)' class="btn btn-danger"
+          <input type="button" onclick='ctx.updtCredit("{{@root.uid}}","{{game_type}}",true)' class="btn btn-danger"
             value='Çek' />
         </div>
       </div>
