@@ -3,7 +3,7 @@ import { default as cfg, Config } from "./config";
 import 'izitoast/dist/css/iziToast.min.css';
 import "@coreui/icons/css/all.min.css";
 import Handlebars from "handlebars"
-import { Request, User, TableGroup, Wallet, Err } from "tombalaApi";
+import { Request, User, TableGroup, Wallet, Err, GameDetails } from "tombalaApi";
 //@ts-ignore
 import { Modal } from "@coreui/coreui"
 import translateError from "./errMessagesTR";
@@ -19,6 +19,7 @@ interface BreadCrumb {
 Handlebars.registerHelper(handlebarsHelpers)
 
 class Users extends Request {
+	gameDetails: GameDetails[] = [];
 	myData?: User;
 	wallets: Wallet[] = [];
 	lockCardData: number[] = [];
@@ -58,11 +59,10 @@ class Users extends Request {
 	loadGameIdSelector() {
 		this.gameIdSelectorTpl.then(tpl => {
 			const holder: HTMLElement = (window as any).gameIdSelectorHolder;
-			holder.innerHTML = tpl({ wallets: this.wallets })
-			this.selectedGameId = this.wallets[0]?.game_id
+			holder.innerHTML = tpl({ gameDetails: this.gameDetails })
+			this.selectedGameId = this.gameDetails[0].id;
 			if (this.selectedGameId) {
-				this
-					.getMyTableGroups()
+				this.getMyTableGroups()
 					.then(() => this.updateTGUI());
 			}
 			holder.querySelector("select")?.addEventListener("change", e => {
@@ -78,16 +78,13 @@ class Users extends Request {
 	initWallet() {
 		const that = this;
 		Promise.all(this.cfg.gameIds.map(that.getGameData.bind(this)))
-			.catch(e =>
-				Promise.reject(IziToast.error({ title: "Hata", message: e + "" }))
-			)
+			.catch(e =>Promise.reject(IziToast.error({ title: "Hata", message: e + "" })))
 			.then(data => {
-				data.forEach(d => {
-					if (d.success) {
-						that.wallets.push(d.data.wallet);
-						this.loadGameIdSelector()
-					}
-				});
+				if (data[0].success) {
+					that.wallets.push(data[0].data.wallet);
+					this.loadGameIdSelector();
+					data.forEach(d =>this.gameDetails.push(d.data.game_details));
+				}
 				that.updateUserCreditUI();
 			});
 	}
@@ -101,7 +98,6 @@ class Users extends Request {
 					const [title, msg] = translateError(reason as Err);
 					return Promise.reject(IziToast.error({ title, message: msg || '' }));
 				}
-				console.log(data);
 				that.lockCardData = data;
 				that.breadCrumbs.push({ id, funcName: 'ctx.updateTGUI()', name: 'Masalar' });
 				that.updateBreadCrumbUI();
@@ -182,7 +178,7 @@ class Users extends Request {
 				that.lockCardData.splice(that.lockCardData.indexOf(cardID), 1);
 				that.updateCardUI(tgID);
 				that.updateLockCardPieceUI();
-				return IziToast.success({ title: 'Başarılı', timeout: 1000,  });
+				return IziToast.success({ title: 'Başarılı', timeout: 1000, });
 			})
 	}
 	async getMyTableGroups(): Promise<TableGroup[]> {
@@ -207,7 +203,7 @@ class Users extends Request {
 				if (!success) {
 					const [title, msg] = translateError(reason as Err);
 					IziToast.error({ title, message: msg || "" });
-					return Promise.reject(setTimeout(() => location.pathname='index.html', 1000));
+					return Promise.reject(setTimeout(() => location.pathname = 'index.html', 1000));
 				}
 				if (data.user_type == "user") location.pathname = "/index.html";
 				return data;
