@@ -4,7 +4,7 @@ import "@coreui/icons/css/all.min.css";
 import { registerHelper } from "handlebars";
 import IziToast from "izitoast";
 import "izitoast/dist/css/iziToast.css";
-import { Err, Request, Table, TableGroup, User, Wallet } from "tombalaApi";
+import { Err, Request, Table, TableGroup, User, Wallet, GameDetails } from "tombalaApi";
 import "../css/tables.css";
 import { loadTpl, handlebarsHelpers } from "../utils";
 import { Config, default as cfg } from "./config";
@@ -30,6 +30,7 @@ const simdilikGroupTypes: GroupType[] = [
 ];
 
 class TableGroupsAndTables extends Request {
+	gameDetails: GameDetails[] = [];
 	myData?: User;
 	wallets: Wallet[] = [];
 	myTableGroups: TableGroup[] = [];
@@ -55,8 +56,7 @@ class TableGroupsAndTables extends Request {
 			const mdlEl = document.getElementById("actionModal") || undefined;
 			that.modal = new Modal(mdlEl, {});
 			that.modalBody = mdlEl?.querySelector(".modal-dialog") || undefined;
-			that
-				.getMyData()
+			that.getMyData()
 				.then(d => {
 					if (d.user_type != "seller")
 						Promise.reject((location.pathname = "/users.html"));
@@ -71,8 +71,9 @@ class TableGroupsAndTables extends Request {
 	loadGameIdSelector() {
 		this.gameIdSelectorTpl.then(tpl => {
 			const holder: HTMLElement = (window as any).gameIdSelectorHolder;
-			holder.innerHTML = tpl({ wallets: this.wallets })
-			this.selectedGameId = this.wallets[0]?.game_id
+			holder.innerHTML = tpl({ gameDetails: this.gameDetails })
+			console.log(this.gameDetails);
+			this.selectedGameId = this.gameDetails[0].id;
 			if (this.selectedGameId) {
 				this
 					.getMyTableGroups()
@@ -97,12 +98,11 @@ class TableGroupsAndTables extends Request {
 				Promise.reject(IziToast.error({ title: "Hata", message: e + "" }))
 			)
 			.then(data => {
-				data.forEach(d => {
-					if (d.success) {
-						that.wallets.push(d.data.wallet);
-						this.loadGameIdSelector()
+					if (data[0].success) {
+						that.wallets.push(data[0].data.wallet);
+						this.loadGameIdSelector();
+						data.forEach(d=>this.gameDetails.push(d.data.game_details))
 					}
-				});
 				that.updateUserCreditUI();
 			});
 	}
@@ -395,16 +395,11 @@ class TableGroupsAndTables extends Request {
 		const that = this;
 		const el = document.querySelector("#accordion-table-groups-and-tables");
 		let tGroup = that.myTableGroups;
-		tGroup.forEach(e => e.tables = e.tables.sort((a, b) => (a.price < b.price) ? -1 : (a.price > b.price) ? 1 : 0);
+
+		tGroup.forEach(e => e.tables = e.tables.sort((a, b) => (a.price < b.price) ? -1 : (a.price > b.price) ? 1 : 0));
 		that.tableGroupsAndTablesTemplate
-			.then(t => {
-				return t({
-					tableGroups: tGroup
-				});
-			})
-			.then(tpl => {
-				el && (el.innerHTML = tpl);
-			});
+			.then(t => t({ tableGroups: tGroup }))
+			.then(tpl => el && (el.innerHTML = tpl));
 	}
 	updateUiMydata() {
 		const that = this;
