@@ -5281,9 +5281,9 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-"tombalaApi@git+https://github.com/game-system/tombalaUiRequests.git#0.22.1":
+"tombalaApi@git+https://github.com/game-system/tombalaUiRequests.git":
   version "0.20.0"
-  resolved "git+https://github.com/game-system/tombalaUiRequests.git#ff68cde851c5dabf22cc9eba41d09f87e3883463"
+  resolved "git+https://github.com/game-system/tombalaUiRequests.git#7d991c0fec99b745932e13a39e02d89fefc16357"
 
 tough-cookie@^2.3.3, tough-cookie@^2.5.0, tough-cookie@~2.5.0:
   version "2.5.0"

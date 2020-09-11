@@ -24,7 +24,7 @@
         "simple-datatables": "^2.1.13",
         "sweetalert2": "^9.14.2",
         "toastr": "^2.1.4",
-        "tombalaApi": "git+https://github.com/game-system/tombalaUiRequests.git#0.22.1"
+        "tombalaApi": "git+https://github.com/game-system/tombalaUiRequests.git"
     },
     "devDependencies": {
         "@babel/core": "^7.10.2",
