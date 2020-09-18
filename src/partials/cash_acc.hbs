@@ -1,5 +1,5 @@
-<div class="row text-center font-weight-bold" style="font-size:1.5rem">
-	<div class="card col">
+<div class="row text-center font-weight-bold flex-wrap" style="font-size:1.5em">
+	<div class="card col-lg-4 col-sm-6 col-12">
 		<div class="card-title">KASA</div>
 		<div class="card-body">
 			<div> Kredi : {{toFixed profit}}</div>
@@ -8,22 +8,21 @@
 			</div>
 		</div>
 	</div>
-	<div class="card col text-success">
+	<div class="card col-lg-4 col-sm-6 col-12 text-success">
 		<div class="card-title">GİRİŞ</div>
 		<div class="card-body ">
 			<div>Kredi: {{toFixed income}}</div>
 			<div>Bonus: {{toFixed bonus_income}}</div>
-			
 		</div>
 	</div>
-	<div class="card col text-danger">
+	<div class="card col-lg-4 col-sm-6 col-12 text-danger">
 		<div class="card-title ">ÇIKIŞ</div>
 		<div class="card-body">
 			<div>Kredi: {{toFixed expense}}</div>
 			<div>Bonus: {{toFixed bonus_expense}}</div>
 		</div>
 	</div>
-	<div class="card col">
+	<div class="card col-lg-4 col-sm-6 col-12">
 		<div class="card-title ">HESAP SIFIRLA</div>
 		<div class="card-body">
 			<div id="sifirlabtn" class="btn btn-danger">SIFIRLA</div>
@@ -31,6 +30,7 @@
 		</div>
 	</div>
 </div>
+<div style="overflow:scroll">
 <table class="table table-stripped display" id="accounting-table">
 	<thead>
 		<th>Kullanıcı</th>
@@ -61,3 +61,4 @@
 		{{/with}}
 	</tbody>
 </table>
+</div>
