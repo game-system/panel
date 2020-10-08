@@ -1,0 +1,16 @@
+
+{{#each games}}
+  <tr>
+    <td><b>{{name}}</b></td>
+    <td>
+    {{#if open}}
+      <div class="btn btn-primary" style="width:80px" onclick="ctx.updateGameopenClose({{id}},false)">Açık</div>
+      {{else}}
+      <div class="btn btn-danger" style="width:80px" onclick="ctx.updateGameopenClose({{id}},true)">Kapalı</div>
+      {{/if}}
+    </td>
+    <td class="font-weight-bold">
+      <div onclick="ctx.onUserDeleteClickHandler('{{id}}')" class="btn btn-danger p-1"><span  style="font-size:1.3rem" class="cil-ban btn-icon p-1"></span></div>
+    </td>
+  </tr>
+{{/each}}
