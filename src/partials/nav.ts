@@ -4,7 +4,7 @@ const navBarTemplate = fetch(require("../partials/nav.hbs")).then(d => d.text())
 
 const userType = sessionStorage.getItem('user_type');
 //@ts-ignore
-navBarTemplate.then(t => t({ seller: userType == 'seller' ? true : false })).then(html => {
+navBarTemplate.then(t => t({ seller: userType == 'seller' ? true : false,superadmin:userType=='superadmin'?true:false })).then(html => {
 	document.querySelector("#sidebar")?.insertAdjacentHTML("beforeend", html);
 	document.querySelector('#sidebar')?.classList.add('text-uppercase');
 })

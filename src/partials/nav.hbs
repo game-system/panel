@@ -1,41 +1,48 @@
+
 <ul class="c-sidebar-nav">
+  <li class="c-sidebar-nav-item">
+    <a class="c-sidebar-nav-link" href="../users.html">
+      Kullanıcılar
+    </a>
+  </li>
+  {{#if superadmin}}
     <li class="c-sidebar-nav-item">
-        <a class="c-sidebar-nav-link" href="../users.html">
-        Kullanıcılar
+      <a class="c-sidebar-nav-link" href="../games-management.html">
+        Oyun Yönetimi
       </a>
     </li>
-
-    {{#if seller}}
-      <li class="c-sidebar-nav-item">
-        <a class="c-sidebar-nav-link" href="../games.html">
-          Oyunlar
-        </a>
-      </li>
+  {{/if}}
+  {{#if seller}}
     <li class="c-sidebar-nav-item">
-        <a class="c-sidebar-nav-link" href="../tables.html">
-			Masa Grupları
-		</a>
+      <a class="c-sidebar-nav-link" href="../games.html">
+        Oyunlar
+      </a>
     </li>
     <li class="c-sidebar-nav-item">
-        <a class="c-sidebar-nav-link" href="../lock-card.html">
+      <a class="c-sidebar-nav-link" href="../tables.html">
+        Masa Grupları
+      </a>
+    </li>
+    <li class="c-sidebar-nav-item">
+      <a class="c-sidebar-nav-link" href="../lock-card.html">
         Kart Kilitle/Aç
       </a>
     </li>
-    {{/if}}
-    <li class="c-sidebar-nav-item">
-        <a class="c-sidebar-nav-link" href="../muhasebe.html">
-			Muhasebe
-		</a>
-    </li>
-    <li class="c-sidebar-nav-item">
-        <a class="c-sidebar-nav-link" href="../sifirlama.html">
-			Hesap Sıfırlama Geçmişi
-		</a>
-    </li>
-    <li class="c-sidebar-nav-item">
-        <a class="c-sidebar-nav-link" href="../index.html" id="logout_a">
-			Çıkış Yap
-		</a>
-    </li>
-    <div id='credits'></div>
+  {{/if}}
+  <li class="c-sidebar-nav-item">
+    <a class="c-sidebar-nav-link" href="../muhasebe.html">
+      Muhasebe
+    </a>
+  </li>
+  <li class="c-sidebar-nav-item">
+    <a class="c-sidebar-nav-link" href="../sifirlama.html">
+      Hesap Sıfırlama Geçmişi
+    </a>
+  </li>
+  <li class="c-sidebar-nav-item">
+    <a class="c-sidebar-nav-link" href="../index.html" id="logout_a">
+      Çıkış Yap
+    </a>
+  </li>
+  <div id='credits'></div>
 </ul>
