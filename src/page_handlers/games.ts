@@ -25,7 +25,10 @@ class Games extends Request{
         return Promise.resolve(this.myData = d)
       })
       .then(() => this.updateUiMydata());
-    this.listGames();
+    window.addEventListener('load',()=>{
+      this.listGames();
+
+    })
   }
   private listGames(){
     const games=this.games;
@@ -52,10 +55,10 @@ class Games extends Request{
       });
   }
   updateGameopenClose(gameId:number,v:boolean){
-  this.games.forEach(e=>{
-    if(e.id==gameId) e.open=v;
-  })
-  this.listGames();
+    this.games.forEach(e=>{
+      if(e.id==gameId) e.open=v;
+    })
+    this.listGames();
   }
   updateUiMydata() {
     const that = this;
