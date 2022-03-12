@@ -34,7 +34,7 @@
         "@types/sweetalert": "^2.0.4",
         "@types/toastr": "^2.1.38",
         "live-server": "^1.2.1",
-        "parcel-bundler": "^1.12.4",
+        "parcel-bundler": "^1.12.5",
         "rimraf": "^3.0.2",
         "sass": "^1.26.8",
         "typescript": "^3.9.5"

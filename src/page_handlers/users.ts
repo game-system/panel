@@ -64,6 +64,7 @@ class Users extends Request {
 				Promise.reject(IziToast.error({ title: "Hata", message: e + "" }))
 			)
 			.then(data => {
+				console.log(data)
 				data.forEach(d => {
 					if (d.success) {
 						that.wallets.push(d.data.wallet);
